@@ -1,0 +1,28 @@
+<div class="exercice">
+      <div class="card">
+            <div class="exercice-title">
+                  <div class="exercice-category">
+                        {{category}}
+                  </div>
+                  <h1 class="exercice-name">
+                        {{title}}
+                  </h1>
+            </div>
+      </div>
+
+      <div class="card">
+            <ide language="javascript" autofocus="true" ng-model="$code">
+            </ide>
+      </div>
+
+      <div class="card">
+            <div class="button" ng-click="$execute()">
+                  EXECUTE
+            </div>
+      </div>
+
+      <div class="card">
+            <cmd content="$cmdContent"></cmd>
+      </div>
+
+</div>
