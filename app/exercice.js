@@ -3,14 +3,14 @@
   var dependencies = [
     "babel.ide",
     "babel.cmd",
-    "babel.compile"
+    "babel.script"
   ];
 
   var module = angular.module("babel.exercice", dependencies);
 
   module.directive("exercice", [
-    "$compileJS",
-    function($compileJS) {
+    "$script",
+    function($script) {
       return {
         "restrict":"E",
         "scope":{
@@ -23,7 +23,9 @@
           scope.$cmdContent = "";
 
           scope.$execute = function() {
-            scope.$cmdContent = $compileJS.$execute(scope.$code);
+            script = $script.$build(scope.$code);
+            script.$run();
+            scope.$cmdContent = script.$cmd();
           };
 
         }
