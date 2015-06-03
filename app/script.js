@@ -38,7 +38,18 @@
     */
     var Script = function(code) {
       this.$code = code;
-      this.$interpreter = new Interpreter(code, initInterpreter);
+
+      try {
+        this.$interpreter = new Interpreter(code, initInterpreter);
+      }
+      catch(e) {
+        this.$interpreter = undefined;
+        this.$error = e;
+      }
+      finally {
+
+      }
+
     };
 
     /**
@@ -46,7 +57,12 @@
     * @return boolean false s'il n'existe plus d'instruction.
     */
     Script.prototype.$step = function () {
-      return this.$interpreter.step();
+      if(angular.isDefined(this.$interpreter)) {
+        return this.$interpreter.step();
+      }
+      else {
+        return false;
+      }
     };
 
     /**
@@ -56,29 +72,55 @@
     * @return Object résultat de l'exécution.
     */
     Script.prototype.$run = function() {
-      this.$interpreter.run();
-      return this.$interpreter.value;
+      if(angular.isDefined(this.$interpreter)) {
+        try {
+          this.$interpreter.run();
+          return this.$interpreter.value;
+        }
+        catch(e) {
+          this.$interpreter.cmd += "\n" + e;
+          return null;
+        }
+      }
+      else {
+        return null;
+      }
     };
 
     /**
     * @return les logs de l'exécution.
     */
     Script.prototype.$cmd = function() {
-      return this.$interpreter.cmd || "";
+      if(angular.isDefined(this.$interpreter)) {
+        return this.$interpreter.cmd || "";
+      }
+      else {
+        return this.$error + "";
+      }
     };
 
     /**
     * @return Array pile d'instructions.
     */
     Script.prototype.$stack = function() {
-      return this.$interpreter.stateStack;
+      if(angular.isDefined(this.$interpreter)) {
+        return this.$interpreter.stateStack;
+      }
+      else {
+        return null;
+      }
     };
 
     /**
     * @return L'abstract Syntax Tree du script.
     */
     Script.prototype.$ast = function() {
-      return this.$interpreter.ast;
+      if(angular.isDefined(this.$interpreter)) {
+        return this.$interpreter.ast;
+      }
+      else {
+        return null;
+      }
     };
 
     /**
