@@ -24,6 +24,9 @@
 
           scope.$execute = function() {
             script = $script.$build(scope.$code);
+            script.$walkAst(function() {
+              console.log(this);
+            });
             script.$run();
             scope.$cmdContent = script.$cmd();
           };
