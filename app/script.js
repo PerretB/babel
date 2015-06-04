@@ -6,7 +6,7 @@
 
   var module = angular.module("babel.script", dependencies);
 
-  module.service("$script", function() {
+  module.service("$scripts", function() {
 
     /**
     * Initialise un interpréteur, et ajoute la fonction print.

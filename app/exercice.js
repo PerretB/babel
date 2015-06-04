@@ -9,8 +9,8 @@
   var module = angular.module("babel.exercice", dependencies);
 
   module.directive("exercice", [
-    "$script",
-    function($script) {
+    "$scripts",
+    function($scripts) {
       return {
         "restrict":"E",
         "scope":{
@@ -23,12 +23,12 @@
           scope.$cmdContent = "";
 
           scope.$execute = function() {
-            script = $script.$build(scope.$code);
-            script.$walkAst(function() {
+            $script = $scripts.$build(scope.$code);
+            $script.$walkAst(function() {
               console.log(this);
             });
-            script.$run();
-            scope.$cmdContent = script.$cmd();
+            $script.$run();
+            scope.$cmdContent = $script.$cmd();
           };
 
         }
