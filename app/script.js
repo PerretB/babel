@@ -167,9 +167,9 @@
           return false;
         }
 
-        if (node.type == 'ExpressionStatement') {
-          if (node.expression.type == "CallExpression") {
-            if (node.expression.callee.name == functionName) {
+        if (this.type == 'ExpressionStatement') {
+          if (this.expression.type == "CallExpression") {
+            if (this.expression.callee.name == functionName) {
               result = true;
               return false;
             }
