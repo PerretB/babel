@@ -1,27 +1,16 @@
 <div class="exercice">
-      <div class="card">
-            <div class="exercice-title">
-                  <div class="exercice-category">
-                        {{category}}
-                  </div>
-                  <h1 class="exercice-name">
-                        {{title}}
-                  </h1>
-            </div>
-      </div>
-
-      <div class="card">
+      <div class="card ide">
             <ide language="javascript" autofocus="true" ng-model="$code">
             </ide>
       </div>
 
       <div class="card">
-            <div class="button" ng-click="$execute()">
+            <button class="execute-button" ng-click="$execute()">
                   EXECUTE
-            </div>
+            </button>
       </div>
 
-      <div class="card">
+      <div class="card cmd">
             <cmd content="$cmdContent"></cmd>
       </div>
 
