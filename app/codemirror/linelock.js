@@ -140,6 +140,8 @@
 	*/
 	var onLock = function(CodeMirror, lineNumber) {
 		CodeMirror.addLineClass(lineNumber, "background", "CodeMirror-locked");
+		CodeMirror.addLineClass(lineNumber, "background", "fa");
+		CodeMirror.addLineClass(lineNumber, "background", "fa-lock");
 		checkCursor(CodeMirror);
 	};
 
