@@ -59,14 +59,10 @@
 						var validator = ValidatorBuilder.parse("root . function . return"); // with error message \"Pas trouvé ton truc !\""
 
 						console.log(validator);
-
-						validator.init($script.$ast());
-						console.log(validator.find());
+						console.log(validator.find($script.$ast()));
 
 						validator = ValidatorBuilder.parse("root > function"); //with error message \"Pas trouvé ton truc !\"
-
-						validator.init($script.$ast());
-						console.log(validator.find());
+						console.log(validator.find($script.$ast()));
 
 					}
 				}

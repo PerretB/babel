@@ -12,28 +12,12 @@ var ASTRequest = (function() {
     child.prototype = new mother();
   };
 
-  var __concat = function(a, b) {
-    if(Array.isArray(a) && Array.isArray(b)) {
-      return a.concat(b);
-    }
-    else if(Array.isArray(a) && !Array.isArray(b)) {
-      return a.push(b);
-    }
-    else if(!Array.isArray(a) && Array.isArray(b)) {
-      return b.unshift(a);
-    }
-    else {
-      return [a, b];
-    }
-  };
-
   /**
   * Wrapper pour faciliter le parcourt dans les nodes.
   */
   var Node = function(node) {
     this.node = node;
     this.parent = null;
-    this.__next = 0;
   };
 
   Node.prototype.walk = function(callback, args) {
@@ -139,67 +123,112 @@ var ASTRequest = (function() {
     }
   };
 
-  /**
-  * @return boolean true si le noeud contient d'autres enfants.
-  */
-  Node.prototype.hasNext = function() {
-    return this.__next < this.count();
+  Node.prototype.each = function(callback, args) {
+
+    var run = true;
+    var childs = this.childs();
+
+    if(__defined(childs)) {
+      for(var i = 0; i < childs.length && run !== false; ++i) {
+
+        if(__defined(args)) {
+          run = callback.apply(childs[i], args);
+        }
+        else {
+          run = callback.call(childs[i], childs[i]);
+        }
+
+      }
+    }
+
   };
 
-  /**
-  * Permet de relancer une itération sur le noeud.
-  */
-  Node.prototype.reset = function() {
-    this.__next = 0;
+  var RequestResult = function(value) {
+    if(Array.isArray(value)) {
+      this.nodes = value;
+    }
+    else if(__defined(value)) {
+      this.nodes = [value];
+    }
+    else {
+      this.nodes = [];
+    }
   };
 
-  /**
-  * @return Node l'enfant suivant.
-  */
-  Node.prototype.next = function() {
-    var value = this.child(this.__next);
-    this.__next += 1;
-    return value;
+  RequestResult.prototype.isEmpty = function() {
+    return this.nodes.length <= 0;
   };
 
-  /**
-  * Erreur lorsqu'une requête ne trouve pas un noeud précis.
-  */
-  var RequestError = function(message) {
-    this.message = message;
+  RequestResult.prototype.length = function() {
+    return this.nodes.length;
+  };
+
+  RequestResult.prototype.get = function(i) {
+    return this.nodes[i];
+  };
+
+  RequestResult.prototype.each = function(callback, args) {
+
+    var run = true;
+
+    for(var i = 0; i < this.nodes.length && run !== false; ++i) {
+
+      if(__defined(args)) {
+        run = callback.apply(this.nodes[i], args);
+      }
+      else {
+        run = callback.call(this.nodes[i], this.nodes[i]);
+      }
+
+    }
+
+  };
+
+  RequestResult.prototype.add = function(element) {
+    if(element instanceof RequestResult) {
+      this.nodes = this.nodes.concat(element.nodes);
+    }
+    else {
+      this.nodes.push(element);
+    }
   };
 
   /**
   * Une requête, objet permettant de chercher un élément dans un noeud.
   */
-  var Request = function() {
-    this.alias = null;
-    this.error = "Not found.";
-    this.node = null;
-  };
+  var Request = function() { };
 
-  /**
-  * Initialise la requête.
-  */
-  Request.prototype.init = function(node) {
-
+  Request.prototype.find = function(node) {
     if(node instanceof Node) {
-      this.node = node;
+      return this.__find(node);
+    }
+    else if(node instanceof RequestResult) {
+
+      var result = new RequestResult();
+      var self = this;
+
+      node.each(function() {
+        result.add(self.__find(this));
+      });
+
+      return result;
+
     }
     else {
-      this.node = new Node(node);
+      return this.__find(new Node(node));
     }
   };
 
   /**
   * Tente de trouver quelque chose après un appel à init.
   */
-  Request.prototype.find = function() {
-    if(__defined(this.node)) {
-      return this.node;
+  Request.prototype.__find = function(node) {
+
+    if(__defined(node)) {
+      return new RequestResult(node);
     }
     else {
-      return new RequestError(this.error);
+      return new RequestResult();
     }
   };
 
@@ -213,24 +242,12 @@ var ASTRequest = (function() {
 
   __extends(ConcatRequest, Request);
 
-  ConcatRequest.prototype.find = function() {
+  ConcatRequest.prototype.__find = function(node) {
 
-    this.first.init(this.node.copy());
-    var first = this.first.find();
+    var first  = this.first.find(node);
+    var second = this.second.find(node);
 
-    if(first instanceof RequestError) {
-      return first;
-    }
-
-    this.second.init(this.node.copy());
-    var second = this.second.find();
-
-    if(second instanceof RequestError) {
-      return second;
-    }
-    else {
-      return __concat(first, second);
-    }
+    return first.add(second);
 
   };
 
@@ -240,72 +257,45 @@ var ASTRequest = (function() {
   var FirstChildRequest = function(selector, request) {
     this.selector = selector;
     this.request = request;
-    this.__results = null;
-    this.__parents = null;
   };
 
   __extends(FirstChildRequest, Request);
 
   /**
-  * Récupère les enfants d'un parent.
+  * Récupère les enfants du parent.
   */
-  FirstChildRequest.prototype.__findIn = function(node) {
+  FirstChildRequest.prototype.__findChilds = function(node) {
 
-    if(node.hasChilds()) {
+    var result = new RequestResult();
+    var self = this;
 
-      while(node.hasNext()) {
-        var child = node.next();
-        this.request.init(child);
+    node.each(function() {
 
-        if(!(this.request.find() instanceof RequestError)) {
-          this.__results.push(child);
-        }
-      }
+      result.add(
+        self.request.find(this)
+      );
 
-    }
+    });
 
-  };
-
-  /**
-  * Récupère les enfants de tous les parents.
-  */
-  FirstChildRequest.prototype.__findChilds = function() {
-
-    if(Array.isArray(this.__parents)) {
-      for(var i = 0; i < this.__parents.length; ++i) {
-        this.__findIn(this.__parents[i]);
-      }
-    }
-    else {
-      this.__findIn(this.__parents);
-    }
+    return result;
 
   };
 
-  FirstChildRequest.prototype.init = function(node) {
+  FirstChildRequest.prototype.__find = function(node) {
 
-    this.selector.init(node);
-    this.__parents = this.selector.find();
+      var parents = this.selector.find(node);
+      var result = new RequestResult();
+      var self = this;
 
-  };
+      parents.each(function() {
 
-  FirstChildRequest.prototype.find = function() {
+        result.add(
+          self.__findChilds(this)
+        );
 
-    if(this.__parents instanceof RequestError) {
-      return this.__parents;
-    }
-    else {
-      this.__results = [];
-      this.__findChilds();
+      });
 
-      if(this.__results.length > 0) {
-        return this.__results;
-      }
-      else {
-        return new RequestError(this.error);
-      }
-
-    }
+      return result;
 
   };
 
@@ -315,69 +305,42 @@ var ASTRequest = (function() {
   var HasChildRequest = function(selector, request) {
     this.selector = selector;
     this.request = request;
-    this.__results = null;
-    this.__parents = null;
   };
 
   __extends(HasChildRequest, Request);
 
   /**
-  * Récupère les enfants d'un parent.
-  */
-  HasChildRequest.prototype.__findIn = function(node) {
-
-    var self = this;
-
-    node.walk(function() {
-      self.request.init(this);
-      if(!(self.request.find() instanceof RequestError)) {
-        this.reset();
-        self.__results.push(this);
-      }
-    });
-
-  };
-
-  /**
   * Récupère les enfants de tous les parents.
   */
-  HasChildRequest.prototype.__findChilds = function() {
+  HasChildRequest.prototype.__findChilds = function(node) {
 
-    if(Array.isArray(this.__parents)) {
-      for(var i = 0; i < this.__parents.length; ++i) {
-        this.__findIn(this.__parents[i]);
-      }
-    }
-    else {
-      this.__findIn(this.__parents);
-    }
+    var self = this;
+    var result = new RequestResult();
 
-  };
+    node.walk(function() {
+      result.add(
+        self.request.find(this)
+      );
+    });
 
-  HasChildRequest.prototype.init = function(node) {
-
-    this.selector.init(node);
-    this.__parents = this.selector.find();
+    return result;
 
   };
 
-  HasChildRequest.prototype.find = function() {
 
-    if(this.__parents instanceof RequestError) {
-      return this.__parents;
-    }
-    else {
-      this.__results = [];
-      this.__findChilds();
+  HasChildRequest.prototype.__find = function(node) {
 
-      if(this.__results.length > 0) {
-        return this.__results;
-      }
-      else {
-        return new RequestError(this.error);
-      }
+    var parents = this.selector.find(node);
+    var result = new RequestResult();
+    var self = this;
 
-    }
+    parents.each(function() {
+      result.add(
+        self.__findChilds(this)
+      );
+    });
+
+    return result;
 
   };
 
@@ -390,13 +353,13 @@ var ASTRequest = (function() {
 
   __extends(NodeTypeRequest, Request);
 
-  NodeTypeRequest.prototype.find = function() {
+  NodeTypeRequest.prototype.__find = function(node) {
 
-    if(this.node.is(this.type)) {
-      return this.node;
+    if(node.is(this.type)) {
+      return new RequestResult(node);
     }
     else {
-      return new RequestError(this.error);
+      return new RequestResult();
     }
 
   };
@@ -410,19 +373,21 @@ var ASTRequest = (function() {
 
   __extends(FunctionRequest, Request);
 
-  FunctionRequest.prototype.find = function() {
+  FunctionRequest.prototype.__find = function(node) {
 
-    if(this.node.is('function')) {
+    if(node.is('function')) {
 
-      if(__defined(this.identifier) && this.node.identifier() != this.identifier) {
-        return new RequestError(this.error);
+      console.log(node);
+
+      if(__defined(this.identifier) && node.identifier() != this.identifier) {
+        return new RequestResult();
       }
 
-      return this.node;
+      return new RequestResult(node);
 
     }
 
-    return new RequestError(this.error);
+    return new RequestResult();
 
   };
 
