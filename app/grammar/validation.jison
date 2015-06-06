@@ -48,8 +48,8 @@ requests :
          ;
 
 request :
-          request_unit '.' request              {$$ = ASTRequest.firstChild($1, $3);}
-        | request_unit '>' request              {$$ = ASTRequest.has($1, $3);}
+          request '.' request_unit              {$$ = ASTRequest.firstChild($1, $3);}
+        | request '>' request_unit              {$$ = ASTRequest.has($1, $3);}
         | request_unit                          {$$ = ASTRequest.identity($1);}
         ;
 

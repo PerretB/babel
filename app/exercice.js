@@ -42,7 +42,9 @@
 						scope.$editor.$concat("function sort (toSort) {");
 						scope.$editor.$concat("");
 						scope.$editor.$concat("	var result = [];");
-						scope.$editor.$concat("");
+						scope.$editor.$concat(" ");
+						scope.$editor.$concat("	function test() {};");
+						scope.$editor.$concat(" ");
 						scope.$editor.$concat("	return result;");
 						scope.$editor.$concat("");
 						scope.$editor.$concat("}");
@@ -50,16 +52,18 @@
 						scope.$editor.$lockLine(0);
 						scope.$editor.$lockLine(1);
 						scope.$editor.$lockLine(2);
-						scope.$editor.$lockLine(4);
 						scope.$editor.$lockLine(6);
+						scope.$editor.$lockLine(8);
 
 						$script = $scripts.$build(scope.$editor.$content());
-						var validator = ValidatorBuilder.parse("root . function sort"); // with error message \"Pas trouvé ton truc !\""
+						var validator = ValidatorBuilder.parse("root . function . return"); // with error message \"Pas trouvé ton truc !\""
+
+						console.log(validator);
 
 						validator.init($script.$ast());
 						console.log(validator.find());
 
-						validator = ValidatorBuilder.parse("root > function sort"); //with error message \"Pas trouvé ton truc !\"
+						validator = ValidatorBuilder.parse("root > function"); //with error message \"Pas trouvé ton truc !\"
 
 						validator.init($script.$ast());
 						console.log(validator.find());

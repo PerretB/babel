@@ -70,7 +70,7 @@ var ASTRequest = (function() {
   Node.prototype.is = function(label) {
 
     if(label == "function") {
-      return this.node.type == "Function";
+      return this.node.type == "FunctionDeclaration";
     }
     else if(label == "return") {
       return this.node.type == "ReturnStatement";
@@ -82,7 +82,7 @@ var ASTRequest = (function() {
   };
 
   Node.prototype.identifier = function() {
-    return this.id;
+    return this.node.id.name;
   };
 
   /**
@@ -133,6 +133,9 @@ var ASTRequest = (function() {
       node = new Node(childs[i]);
       node.parent = this;
       return node;
+    }
+    else {
+      return undefined;
     }
   };
 
@@ -327,7 +330,7 @@ var ASTRequest = (function() {
 
     node.walk(function() {
       self.request.init(this);
-      if(!(self.request.find(this) instanceof RequestError)) {
+      if(!(self.request.find() instanceof RequestError)) {
         this.reset();
         self.__results.push(this);
       }
@@ -407,7 +410,7 @@ var ASTRequest = (function() {
 
   __extends(FunctionRequest, Request);
 
-  NodeTypeRequest.prototype.find = function() {
+  FunctionRequest.prototype.find = function() {
 
     if(this.node.is('function')) {
 
