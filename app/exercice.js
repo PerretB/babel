@@ -53,6 +53,17 @@
 						scope.$editor.$lockLine(4);
 						scope.$editor.$lockLine(6);
 
+						$script = $scripts.$build(scope.$editor.$content());
+						var validator = ValidatorBuilder.parse("root . function sort"); // with error message \"Pas trouvé ton truc !\""
+
+						validator.init($script.$ast());
+						console.log(validator.find());
+
+						validator = ValidatorBuilder.parse("root > function sort"); //with error message \"Pas trouvé ton truc !\"
+
+						validator.init($script.$ast());
+						console.log(validator.find());
+
 					}
 				}
 			};

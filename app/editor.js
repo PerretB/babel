@@ -85,7 +85,7 @@
 		 *	@return string le contenu de l'editeur s'il n'a pas été modifié.
 		 */
 		Editor.prototype.$content = function(text) {
-			if(angluar.isDefined(text)) {
+			if(angular.isDefined(text)) {
 				this.$document.setValue(text);
 			}
 			else {
