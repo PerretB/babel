@@ -51,6 +51,7 @@ request :
           request '.' request_unit    {$$ = ASTRequest.firstChild($1, $3);}
         | request '>' request_unit    {$$ = ASTRequest.has($1, $3);}
         | request DEFINE_ERROR string {$$ = ASTRequest.defineError($1, $3);}
+        | request ALIAS IDENTIFIER       {$$ = ASTRequest.alias($1, $3);}
         | request_unit                {$$ = ASTRequest.identity($1);}
         ;
 

@@ -56,7 +56,7 @@
 						scope.$editor.$lockLine(8);
 
 						$script = $scripts.$build(scope.$editor.$content());
-						var validator = ValidatorBuilder.parse('root . function sort with error message "Il n\'y a pas de fonction sort." . return with error message "La fonction sort ne retourne rien."');
+						var validator = ValidatorBuilder.parse('root . function sort with error message "Il n\'y a pas de fonction sort." as premiereErreur . return with error message "La fonction sort ne retourne rien." as secondeErreur');
 						console.log(validator.find($script.$ast()));
 						validator.validate($script.$ast()).each(function() {
 							console.log(this);
