@@ -21,11 +21,11 @@
 				"templateUrl":"templates/exercice.html",
 				"link": {
 					pre: function(scope, iElem, iAttrs) {
-						
+
 						scope.$editor = $editors.$new();
-						
+
 					},
-					
+
 					post: function(scope, iElem, iAttrs) {
 
 						scope.$cmdContent = "";
@@ -38,13 +38,20 @@
 							$script.$run();
 							scope.$cmdContent = $script.$cmd();
 						};
-						
+
 						scope.$editor.$concat("function sort (toSort) {");
+						scope.$editor.$concat("");
 						scope.$editor.$concat("	var result = [];");
 						scope.$editor.$concat("");
 						scope.$editor.$concat("	return result;");
+						scope.$editor.$concat("");
 						scope.$editor.$concat("}");
 
+						scope.$editor.$lockLine(0);
+						scope.$editor.$lockLine(2);
+						scope.$editor.$lockLine(4);
+						scope.$editor.$lockLine(6);
+						
 					}
 				}
 			};
