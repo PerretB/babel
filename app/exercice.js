@@ -45,7 +45,7 @@
 						scope.$editor.$concat(" ");
 						scope.$editor.$concat("	function test() {};");
 						scope.$editor.$concat(" ");
-						scope.$editor.$concat("	return result;");
+						scope.$editor.$concat("	//return result;");
 						scope.$editor.$concat("");
 						scope.$editor.$concat("}");
 
@@ -56,10 +56,11 @@
 						scope.$editor.$lockLine(8);
 
 						$script = $scripts.$build(scope.$editor.$content());
-						var validator = ValidatorBuilder.parse("root . function . return"); // with error message \"Pas trouvé ton truc !\""
-
-						console.log(validator);
+						var validator = ValidatorBuilder.parse('root . function sort with error message "Il n\'y a pas de fonction sort." . return with error message "La fonction sort ne retourne rien."');
 						console.log(validator.find($script.$ast()));
+						validator.validate($script.$ast()).each(function() {
+							console.log(this);
+						});
 
 						validator = ValidatorBuilder.parse("root > function"); //with error message \"Pas trouvé ton truc !\"
 						console.log(validator.find($script.$ast()));

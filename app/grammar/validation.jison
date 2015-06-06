@@ -48,10 +48,15 @@ requests :
          ;
 
 request :
-          request '.' request_unit              {$$ = ASTRequest.firstChild($1, $3);}
-        | request '>' request_unit              {$$ = ASTRequest.has($1, $3);}
-        | request_unit                          {$$ = ASTRequest.identity($1);}
+          request '.' request_unit    {$$ = ASTRequest.firstChild($1, $3);}
+        | request '>' request_unit    {$$ = ASTRequest.has($1, $3);}
+        | request DEFINE_ERROR string {$$ = ASTRequest.defineError($1, $3);}
+        | request_unit                {$$ = ASTRequest.identity($1);}
         ;
+
+string :
+         STR                              {$$ = $1.substring(1, $1.length-1);}
+       ;
 
 /*  request AS IDENTIFIER request         {$$ = ASTRequest.alias($1, $3);}
 | request DEFINE_ERROR STR request      {$$ = ASTRequest.defineError($1, $3.substring(1, $3.length-1));}*/

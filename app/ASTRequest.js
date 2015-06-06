@@ -143,6 +143,74 @@ var ASTRequest = (function() {
 
   };
 
+  var ValidationResult = function(alias, error) {
+
+    this.__nextDefault = 0;
+    this.errors = {};
+
+    if(__undefined(alias)) {
+      alias = this.__nextDefault;
+      this.__nextDefault += 1;
+    }
+
+    if(__defined(error)) {
+      this.errors[alias] = error;
+    }
+
+  };
+
+  ValidationResult.prototype.isValid = function() {
+    return this.length() <= 0;
+  };
+
+  ValidationResult.prototype.length = function() {
+    var size = 0;
+    for (var key in this.errors) {
+        if (this.errors.hasOwnProperty(key)) {
+          size++;
+        }
+    }
+    return size;
+  };
+
+  ValidationResult.prototype.get = function(alias) {
+    return this.errors[alias];
+  };
+
+  ValidationResult.prototype.each = function(callback, args) {
+
+    var run = true;
+
+    for(var alias in this.errors) {
+      var error = {alias:alias, error:this.errors[alias]};
+
+      if(__defined(args)) {
+        run = callback.apply(error, args);
+      }
+      else {
+        run = callback.call(error, error);
+      }
+    }
+
+  };
+
+  ValidationResult.prototype.add = function(alias, error) {
+
+    if(alias instanceof ValidationResult) {
+      var self = this;
+      alias.each(function() {
+        self.errors[this.alias] = this.error;
+      });
+    }
+    else {
+      if(__undefined(alias)) {
+        alias = this.__nextDefault;
+        this.__nextDefault += 1;
+      }
+      this.errors[alias] = error;
+    }
+  };
+
   var RequestResult = function(value) {
     if(Array.isArray(value)) {
       this.nodes = value;
@@ -199,6 +267,7 @@ var ASTRequest = (function() {
   var Request = function() { };
 
   Request.prototype.find = function(node) {
+
     if(node instanceof Node) {
       return this.__find(node);
     }
@@ -217,6 +286,7 @@ var ASTRequest = (function() {
     else {
       return this.__find(new Node(node));
     }
+
   };
 
   /**
@@ -230,7 +300,24 @@ var ASTRequest = (function() {
     else {
       return new RequestResult();
     }
+
   };
+
+  Request.prototype.validate = function(node) {
+
+    var result = this.find(node);
+
+    if(result.isEmpty()) {
+      return new ValidationResult(this.alias, this.error);
+    }
+    else {
+      return new ValidationResult();
+    }
+
+  };
+
+  Request.prototype.error = "Not found.";
+  Request.prototype.alias = null;
 
   /**
   * Concatène le résultat de deux requêtes dans un tableau.
@@ -248,6 +335,20 @@ var ASTRequest = (function() {
     var second = this.second.find(node);
 
     return first.add(second);
+
+  };
+
+  ConcatRequest.prototype.validate = function(node) {
+
+    var result = new ValidationResult();
+
+    var first  = this.first.validate(node);
+    var second = this.second.validate(node);
+
+    result.add(first);
+    result.add(second);
+
+    return result;
 
   };
 
@@ -299,6 +400,23 @@ var ASTRequest = (function() {
 
   };
 
+  FirstChildRequest.prototype.validate = function(node) {
+
+    var result = new ValidationResult();
+    result.add(this.selector.validate(node));
+
+    if(result.isValid()) {
+      var childs = this.find(node);
+
+      if(childs.isEmpty()) {
+        result.add(this.alias, this.error);
+      }
+    }
+
+    return result;
+
+  };
+
   /**
   * Vérifie que la requête match des éléments enfants.
   */
@@ -339,6 +457,23 @@ var ASTRequest = (function() {
         self.__findChilds(this)
       );
     });
+
+    return result;
+
+  };
+
+  HasChildRequest.prototype.validate = function(node) {
+
+    var result = new ValidationResult();
+    result.add(this.selector.validate(node));
+
+    if(result.isValid()) {
+      var childs = this.find(node);
+
+      if(childs.isEmpty()) {
+        result.add(this.alias, this.error);
+      }
+    }
 
     return result;
 
@@ -456,7 +591,6 @@ var ASTRequest = (function() {
   */
   lib.defineError = function(request, error) {
     request.error = error;
-    console.log(request);
     return request;
   };
 

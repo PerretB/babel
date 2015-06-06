@@ -72,12 +72,12 @@
   }
 */
 var ValidatorBuilder = (function(){
-var o=function(k,v,o,l){for(o=o||{},l=k.length;l--;o[k[l]]=v);return o},$V0=[1,5],$V1=[1,6],$V2=[1,7],$V3=[1,10],$V4=[1,11],$V5=[1,5,6,7,9];
+var o=function(k,v,o,l){for(o=o||{},l=k.length;l--;o[k[l]]=v);return o},$V0=[1,5],$V1=[1,6],$V2=[1,7],$V3=[1,10],$V4=[1,11],$V5=[1,12],$V6=[1,5,6,7,9,10];
 var parser = {trace: function trace() { },
 yy: {},
-symbols_: {"error":2,"requests":3,"request":4,",":5,"EOF":6,".":7,"request_unit":8,">":9,"node":10,"RETURN":11,"ROOT":12,"FUNCTION":13,"IDENTIFIER":14,"$accept":0,"$end":1},
-terminals_: {2:"error",5:",",6:"EOF",7:".",9:">",11:"RETURN",12:"ROOT",13:"FUNCTION",14:"IDENTIFIER"},
-productions_: [0,[3,3],[3,2],[4,3],[4,3],[4,1],[8,1],[10,1],[10,1],[10,2],[10,1]],
+symbols_: {"error":2,"requests":3,"request":4,",":5,"EOF":6,".":7,"request_unit":8,">":9,"DEFINE_ERROR":10,"string":11,"STR":12,"node":13,"RETURN":14,"ROOT":15,"FUNCTION":16,"IDENTIFIER":17,"$accept":0,"$end":1},
+terminals_: {2:"error",5:",",6:"EOF",7:".",9:">",10:"DEFINE_ERROR",12:"STR",14:"RETURN",15:"ROOT",16:"FUNCTION",17:"IDENTIFIER"},
+productions_: [0,[3,3],[3,2],[4,3],[4,3],[4,3],[4,1],[11,1],[8,1],[13,1],[13,1],[13,2],[13,1]],
 performAction: function anonymous(yytext, yyleng, yylineno, yy, yystate /* action[1] */, $$ /* vstack */, _$ /* lstack */) {
 /* this == yyval */
 
@@ -95,24 +95,30 @@ break;
 case 4:
 this.$ = ASTRequest.has($$[$0-2], $$[$0]);
 break;
-case 5: case 6:
+case 5:
+this.$ = ASTRequest.defineError($$[$0-2], $$[$0]);
+break;
+case 6: case 8:
 this.$ = ASTRequest.identity($$[$0]);
 break;
 case 7:
-this.$ = ASTRequest.node("return");
-break;
-case 8:
-this.$ = ASTRequest.rootNode();
+this.$ = $$[$0].substring(1, $$[$0].length-1);
 break;
 case 9:
-this.$ = ASTRequest.functionNode($$[$0]);
+this.$ = ASTRequest.node("return");
 break;
 case 10:
+this.$ = ASTRequest.rootNode();
+break;
+case 11:
+this.$ = ASTRequest.functionNode($$[$0]);
+break;
+case 12:
 this.$ = ASTRequest.node("function");
 break;
 }
 },
-table: [{3:1,4:2,8:3,10:4,11:$V0,12:$V1,13:$V2},{1:[3]},{5:[1,8],6:[1,9],7:$V3,9:$V4},o($V5,[2,5]),o($V5,[2,6]),o($V5,[2,7]),o($V5,[2,8]),o($V5,[2,10],{14:[1,12]}),{4:13,8:3,10:4,11:$V0,12:$V1,13:$V2},{1:[2,2]},{8:14,10:4,11:$V0,12:$V1,13:$V2},{8:15,10:4,11:$V0,12:$V1,13:$V2},o($V5,[2,9]),{1:[2,1],7:$V3,9:$V4},o($V5,[2,3]),o($V5,[2,4])],
+table: [{3:1,4:2,8:3,13:4,14:$V0,15:$V1,16:$V2},{1:[3]},{5:[1,8],6:[1,9],7:$V3,9:$V4,10:$V5},o($V6,[2,6]),o($V6,[2,8]),o($V6,[2,9]),o($V6,[2,10]),o($V6,[2,12],{17:[1,13]}),{4:14,8:3,13:4,14:$V0,15:$V1,16:$V2},{1:[2,2]},{8:15,13:4,14:$V0,15:$V1,16:$V2},{8:16,13:4,14:$V0,15:$V1,16:$V2},{11:17,12:[1,18]},o($V6,[2,11]),{1:[2,1],7:$V3,9:$V4,10:$V5},o($V6,[2,3]),o($V6,[2,4]),o($V6,[2,5]),o($V6,[2,7])],
 defaultActions: {9:[2,2]},
 parseError: function parseError(str, hash) {
     if (hash.recoverable) {
