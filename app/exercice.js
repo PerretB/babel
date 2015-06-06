@@ -48,10 +48,11 @@
 						scope.$editor.$concat("}");
 
 						scope.$editor.$lockLine(0);
+						scope.$editor.$lockLine(1);
 						scope.$editor.$lockLine(2);
 						scope.$editor.$lockLine(4);
 						scope.$editor.$lockLine(6);
-						
+
 					}
 				}
 			};

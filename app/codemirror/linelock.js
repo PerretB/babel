@@ -54,6 +54,23 @@
 	};
 
 	/**
+	* Vérifie que la sélection ne contient pas de ligne bloquées.
+	*
+	* @param object from curseur de départ
+	* @param object to curseur de fin
+	*
+	* @return boolean true si la sélection contient une ligne bloquée.
+	*/
+	var containsLockedLines = function(from, to) {
+		for(var line = from.line; line <= to.line; ++line) {
+				if(this.isLockedLine(line)) {
+					return true;
+				}
+		}
+		return false;
+	};
+
+	/**
    * Retourne un tableau de lineHandle vers les lignes lockées.
 	 *
 	 * @return Array un tableau de lineHandle vers les lignes lockées.
@@ -82,6 +99,7 @@
 	CodeMirror.defineExtension("lockLine", lock);
 	CodeMirror.defineExtension("unlockLine", unlock);
 	CodeMirror.defineExtension("isLockedLine", isLockedLine);
+	CodeMirror.defineExtension("containsLockedLines", containsLockedLines);
 	CodeMirror.defineExtension("lockedsLines", lockedsLines);
 	CodeMirror.defineExtension("__lockedsLines", __lockedsLines);
 
@@ -106,7 +124,7 @@
 	* Insère une nouvelle ligne au début du document.
 	*/
 	var insertNewLineFirst = function(CodeMirror) {
-		CodeMirror.replaceRange("\n", {line:0, ch:0});
+		CodeMirror.replaceRange("\n", {line:0, ch:0}, undefined, "LockMod");
 	};
 
 	/**
@@ -114,7 +132,7 @@
 	*/
 	var insertNewLineEnd = function(CodeMirror) {
 		var lastLine = CodeMirror.lastLine();
-		CodeMirror.replaceRange("\n", {line:lastLine, ch:CodeMirror.getLine(lastLine).length});
+		CodeMirror.replaceRange("\n", {line:lastLine, ch:CodeMirror.getLine(lastLine).length}, undefined, "LockMod");
 	};
 
 	/**
@@ -166,7 +184,7 @@
 		var lastCursorPosition = CodeMirror.lineLockMod.lastCursorPosition;
 		var newCursorPosition = CodeMirror.getCursor();
 
-		// On authorise la sélection. 
+		// On authorise la sélection.
 		if(!CodeMirror.somethingSelected()) {
 			if(CodeMirror.isLockedLine(newCursorPosition.line)) {
 				var cursorDirection = getCursorDirection(lastCursorPosition, newCursorPosition);
@@ -178,46 +196,11 @@
 	};
 
 	/**
-	* Tente de supprimer le maximum de contenu sur une ligne fixe.
-	*/
-	var tryToRemoveInLine = function(CodeMirror, from, lastCh) {
-		if(!CodeMirror.isLockedLine(from.line)) {
-
-			if(lastCh != null && lastCh != undefined) {
-				lastCh = {line:from.line, ch:lastCh};
-			}
-
-			CodeMirror.replaceRange("", from, lastCh);
-
-		}
-	};
-
-	/**
-	*	Tente de supprimer le maximum de contenu possible dans une zone donnée.
-	*/
-	var tryToRemove = function(CodeMirror, from, to) {
-
-		if(from.line == to.line) {
-			tryToRemoveInLine(CodeMirror, from, to.ch);
-		}
-		else {
-			tryToRemoveInLine(CodeMirror, from);
-			for(var line = updates.from.line+1; line < updates.to.line; ++line) {
-				tryToRemoveInLine(CodeMirror, {line:line, ch:0});
-			}
-			tryToRemoveInLine(CodeMirror, {line:to.line, ch:0}, to.ch);
-		}
-
-	};
-
-	/**
 	* Vérifie que les modifications sont valides.
 	*/
 	var checkChange = function(CodeMirror, updates) {
-		console.log(updates);
-		if(updates.origin == "+delete") {
+		if(updates.origin != "LockMod" && CodeMirror.containsLockedLines(updates.from, updates.to)) {
 			updates.cancel();
-			tryToRemove(updates.from, updates.to);
 		}
 	};
 
