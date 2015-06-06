@@ -1,45 +1,77 @@
 html {
       width:100%;
       min-height:100%;
-      background-color:#EDEDED;
 }
 
 body {
-      margin:auto;
-      min-height:100%;
-      padding-top:50px;
-}
-
-.card {
-      margin-top: 5px;
-      background-color:#FFFFFF;
-}
-
-.drop-shadow {
-      -moz-box-shadow: 0px 6px 3px 0px #DDDDDD;
-      -webkit-box-shadow: 0px 6px 3px 0px #DDDDDD;
-      -o-box-shadow: 0px 6px 3px 0px #DDDDDD;
-      box-shadow: 0px 6px 3px 0px #DDDDDD;
-      filter:progid:DXImageTransform.Microsoft.Shadow(color=#DDDDDD, Direction=180, Strength=3);
-}
-
-.execute-button {
+      margin:0px;
+      padding:0px;
+      height:100%;
       width:100%;
-      padding:10px;
-      background-color:#22A7F0;
-      font-size:20px;
-      font-weight:bold;
-      text-align:center;
-      color:#FFFFFF;
-      box-sizing:border-box;
-      cursor:pointer;
 }
 
-.exercice {
-      margin: 0px 20%;
+.top-bar {
+  position:absolute;
+
+  top:0px;
+  left:0px;
+  right:0px;
+
+  height:50px;
+  width:auto;
 }
 
-.exercice .exercice-category {
+.right-panel {
+  position:absolute;
+
+  top:50px;
+  right:0px;
+  bottom:0px;
+
+  height:auto;
+  width:300px;
+}
+
+.main-panel {
+  position: absolute;
+
+  top:50px;
+  left:0px;
+  right:300px;
+  bottom:0px;
+
+  height:auto;
+  width:auto;
+}
+
+.main-panel .editor-panel {
+  position: absolute;
+
+  top:0px;
+  left:0px;
+  right:0px;
+
+  height:50%;
+  width:100%;
+}
+
+.main-panel .cmd-panel {
+  position: absolute;
+
+  bottom:0px;
+  left:0px;
+  right:0px;
+
+  height:50%;
+  width:100%;
+}
+
+.CodeMirror {
+  width:100%;
+  height:100%;
+}
+
+.exercice-category {
       background-color:#22A7F0;
       font-size: 3em;
       font-weight:bold;

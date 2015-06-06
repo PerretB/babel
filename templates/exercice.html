@@ -1,17 +1,23 @@
-<div class="exercice">
-      <div class="card ide">
-            <editor language="javascript" autofocus="true" service="$editor" ng-model="$code">
-            </editor>
-      </div>
+<div class="top-bar container-fluid">
+  <div class="row">
 
-      <div class="card">
-            <button class="execute-button" ng-click="$execute()">
-                  EXECUTE
-            </button>
-      </div>
+  </div>
+</div>
 
-      <div class="card cmd">
-            <cmd content="$cmdContent"></cmd>
-      </div>
+<div class="right-panel container-fluid">
+  <div class="row">
+    <button class="btn btn-primary col-xs-10 col-xs-offset-1" ng-click="$execute()">
+          EXECUTE
+    </button>
+  </div>
+</div>
 
+<div class="main-panel">
+  <div class="editor-panel">
+    <editor language="javascript" autofocus="true" service="$editor" ng-model="$code">
+    </editor>
+  </div>
+  <div class="cmd-panel">
+    <cmd content="$cmdContent"></cmd>
+  </div>
 </div>
