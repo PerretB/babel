@@ -3,7 +3,8 @@
 	var dependencies = [
 		"babel.editor",
 		"babel.cmd",
-		"babel.script"
+		"babel.script",
+		"babel.errors"
 	];
 
 	var module = angular.module("babel.exercice", dependencies);
@@ -21,15 +22,18 @@
 				"templateUrl":"templates/exercice.html",
 				"link": {
 					pre: function(scope, iElem, iAttrs) {
-
 						scope.$editor = $editors.$new();
-
 					},
 
 					post: function(scope, iElem, iAttrs) {
 
+						var test = 'root ' +
+								   '. function sort with error message "Il n\'y a pas de fonction sort." as premiereErreur ' +
+								   '. return with error message "La fonction sort ne retourne rien." as secondeErreur';
+
 						scope.$cmdContent = "";
 						scope.$script = null;
+						scope.$errors = [];
 
 						scope.$watch('$code', function() {
 							scope.$script = null;
@@ -37,6 +41,18 @@
 
 						scope.$compile = function() {
 							scope.$script = $scripts.$build(scope.$code);
+                            errors = scope.$script.$test(test);
+                            msgs = [];
+                            
+                            errors.each(function() {
+                               msgs.push(this.error); 
+                            });
+                            
+                            scope.$errors = msgs;
+                            
+                            if(scope.$errors.length > 0) {
+                                scope.$script = null;
+                            }
 						};
 
 						scope.$execute = function() {
@@ -64,31 +80,21 @@
 							}
 						};
 
-						scope.$editor.$concat("function sort (toSort) {");
+						scope.$editor.$concat("//function sort (toSort) {");
 						scope.$editor.$concat("");
 						scope.$editor.$concat("	var result = [];");
 						scope.$editor.$concat(" ");
 						scope.$editor.$concat("	function test() {};");
 						scope.$editor.$concat(" ");
-						scope.$editor.$concat("	return result;");
+						scope.$editor.$concat("	//return result;");
 						scope.$editor.$concat("");
-						scope.$editor.$concat("}");
+						scope.$editor.$concat("//}");
 
 						scope.$editor.$lockLine(0);
 						scope.$editor.$lockLine(1);
 						scope.$editor.$lockLine(2);
 						scope.$editor.$lockLine(6);
 						scope.$editor.$lockLine(8);
-
-						$script = $scripts.$build(scope.$editor.$content());
-						var validator = ValidatorBuilder.parse('root . function sort with error message "Il n\'y a pas de fonction sort." as premiereErreur . return with error message "La fonction sort ne retourne rien." as secondeErreur');
-						console.log(validator.find($script.$ast()));
-						validator.validate($script.$ast()).each(function() {
-							console.log(this);
-						});
-
-						validator = ValidatorBuilder.parse("root > function . return"); //with error message \"Pas trouvé ton truc !\"
-						console.log(validator.find($script.$ast()));
 
 					}
 				}
