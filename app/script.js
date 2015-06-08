@@ -72,7 +72,7 @@
     Script.prototype.$run = function() {
       if(angular.isDefined(this.$interpreter)) {
         try {
-          this.$interpreter.run();
+          while(this.$step());
           return this.$interpreter.value;
         }
         catch(e) {
@@ -198,6 +198,18 @@
     Script.prototype.$stack = function() {
       if(angular.isDefined(this.$interpreter)) {
         return this.$interpreter.stateStack;
+      }
+      else {
+        return null;
+      }
+    };
+
+    /**
+    * @return Object prochain noeud exécuté.
+    */
+    Script.prototype.$nextNode = function() {
+      if(angular.isDefined(this.$interpreter)) {
+        return this.$interpreter.stateStack[0];
       }
       else {
         return null;

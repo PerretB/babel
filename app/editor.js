@@ -75,6 +75,20 @@
 		};
 
 		/**
+		* Transforme une position buffer en position curseur.
+		*/
+		Editor.prototype.$toPosition = function(ch) {
+			return this.$document.findPosH({line:0, ch:0}, ch, 'char');
+		};
+
+		/**
+		* Changer la sélection de l'éditeur.
+		*/
+		Editor.prototype.$select = function(start, end) {
+			this.$document.setSelection(start, end);
+		};
+
+		/**
 		 *	@ngdoc method
 		 *
 		 *	Récupérer ou changer le contenu de l'editeur.

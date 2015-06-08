@@ -29,14 +29,39 @@
 					post: function(scope, iElem, iAttrs) {
 
 						scope.$cmdContent = "";
+						scope.$script = null;
+
+						scope.$watch('$code', function() {
+							scope.$script = null;
+						});
+
+						scope.$compile = function() {
+							scope.$script = $scripts.$build(scope.$code);
+						};
 
 						scope.$execute = function() {
-							$script = $scripts.$build(scope.$code);
-							$script.$walkAst(function() {
-								console.log(this);
-							});
-							$script.$run();
-							scope.$cmdContent = $script.$cmd();
+							scope.$script.$run();
+							scope.$cmdContent = scope.$script.$cmd();
+							scope.$script = null;
+						};
+
+						scope.$next = function() {
+							node = scope.$script.$nextNode();
+							if(angular.isDefined(node)) {
+								node = node.node;
+								scope.$editor.$select(
+									scope.$editor.$toPosition(node.start),
+									scope.$editor.$toPosition(node.end)
+								);
+							}
+
+							if(!scope.$script.$step()) {
+								scope.$cmdContent = scope.$script.$cmd();
+								scope.$script = null;
+							}
+							else {
+								scope.$cmdContent = scope.$script.$cmd();
+							}
 						};
 
 						scope.$editor.$concat("function sort (toSort) {");
@@ -45,7 +70,7 @@
 						scope.$editor.$concat(" ");
 						scope.$editor.$concat("	function test() {};");
 						scope.$editor.$concat(" ");
-						scope.$editor.$concat("	//return result;");
+						scope.$editor.$concat("	return result;");
 						scope.$editor.$concat("");
 						scope.$editor.$concat("}");
 
@@ -62,7 +87,7 @@
 							console.log(this);
 						});
 
-						validator = ValidatorBuilder.parse("root > function"); //with error message \"Pas trouvé ton truc !\"
+						validator = ValidatorBuilder.parse("root > function . return"); //with error message \"Pas trouvé ton truc !\"
 						console.log(validator.find($script.$ast()));
 
 					}

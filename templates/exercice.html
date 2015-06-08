@@ -6,8 +6,18 @@
 
 <div class="right-panel container-fluid">
   <div class="row">
-    <button class="btn btn-primary col-xs-10 col-xs-offset-1" ng-click="$execute()">
-          EXECUTE
+    <button ng-disabled="$script != null" class="btn btn-primary col-xs-10 col-xs-offset-1" ng-click="$compile()">
+      COMPILE
+    </button>
+  </div>
+  <div class="row">
+    <button ng-disabled="$script == null" class="btn btn-primary col-xs-10 col-xs-offset-1" ng-click="$execute()">
+      RUN
+    </button>
+  </div>
+  <div class="row">
+    <button ng-disabled="$script == null" class="btn btn-primary col-xs-10 col-xs-offset-1" ng-click="$next()">
+      NEXT
     </button>
   </div>
 </div>
