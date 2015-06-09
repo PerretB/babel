@@ -512,8 +512,6 @@ var ASTRequest = (function() {
 
     if(node.is('function')) {
 
-      console.log(node);
-
       if(__defined(this.identifier) && node.identifier() != this.identifier) {
         return new RequestResult();
       }

@@ -9,7 +9,7 @@
 	module.service("$scripts", function() {
 
 		/**
-		* Initialise un interpréteur, et ajoute la fonction print.
+		* Initialise un interpréteur, et ajoute la fonction alert/print
 		*/
 		var initInterpreter = function(interpreter, codeScope) {
 
@@ -24,6 +24,10 @@
 					interpreter.cmd = interpreter.cmd + "\n" + text;
 				}
 			};
+
+			interpreter.setProperty(codeScope, 'alert',
+				interpreter.createNativeFunction(wrapper)
+			);
 
 			interpreter.setProperty(codeScope, 'print',
 				interpreter.createNativeFunction(wrapper)

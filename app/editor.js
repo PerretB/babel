@@ -48,6 +48,28 @@
 		/**
 		 *	@ngdoc method
 		 *
+		 *	Permet de marquer une ligne de l'éditeur (en tant que prochaine instruction à exécuter).
+		 *
+		 *	@param number lineNumber Numéro de la ligne à marquer.
+		 */
+		Editor.prototype.$markLine = function(lineNumber) {
+			this.$document.markLine(lineNumber);
+		};
+
+		/**
+		 *	@ngdoc method
+		 *
+		 *	Permet de démarquer une ligne de l'éditeur (en tant que prochaine instruction à exécuter).
+		 *
+		 *	@param number lineNumber Numéro de la ligne à démarquer.
+		 */
+		Editor.prototype.$unmarkLine = function(lineNumber) {
+			this.$document.unmarkLine(lineNumber);
+		};
+
+		/**
+		 *	@ngdoc method
+		 *
 		 *	Permet de débloquer une ligne de l'éditeur.
 		 *
 		 *	@param number lineNumber Numéro de la ligne à débloquer.
@@ -72,6 +94,7 @@
 			else {
 				this.$document.setValue(this.$document.getValue() + "\n" + text);
 			}
+			return this.$document;
 		};
 
 		/**
@@ -145,12 +168,13 @@
 			"template":"<textarea class=\"editor\"></textarea>",
 			"link": function(scope, iElem, iAttrs, ngModelCtrl) {
 
-				// Création de l'editeur CodeMirror
+				// Création de l'éditeur CodeMirror
 				var cmDocument = CodeMirror.fromTextArea(iElem.find("textarea")[0], {
 					lineNumbers: true,
 					mode: scope.language,
 					matchBrackets: true,
-					autofocus: scope.autofocus
+					autofocus: scope.autofocus,
+					gutters: ["CodeMirror-linenumbers", "breakpoints"]
 				});
 
 				// Si on veut binder un service
