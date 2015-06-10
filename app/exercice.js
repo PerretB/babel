@@ -61,77 +61,126 @@
 							scope.$script = null;
 						};
 
+						/* dernier noeud parcouru */
 						scope.$previousNode = null;
+						/* dernier noeud surlequel le script s'est arrêté */
 						scope.$previousNodePausedOn = null;
+						/* dernière ligne marquée en tant que prochaine instruction à exécuter */
+						scope.$lastMarkedLine = null;
 
-						scope.$nodeRequiringAPause = function(node) {
-							// 'XXXX' => Pause on the node if (node.type == XXXX)
-							// 'YYYY > XXXX' => Pause on the node if (node.type == XXXX) and (previousNode == YYYY)
-							// '!YYYY > XXXX' => Pause on the node if (node.type == XXXX) and (previousNode != YYYY)
-							var nodeTypesToPauseOn = [
+						/**
+						 * Retourne la liste des types de noeud surlesquels une pause s'avère intéressante (step-by-step 'instruction-by-instruction').
+						 *
+						 * @return la liste des types de noeud surlesquels une pause s'avère intéressante. Les données de la liste peuvent être au format suivant :
+						 * 'XXXX' 						=> Pause on the node if (node.type == XXXX)
+						 * 'XXXX preceded by YYYY' 		=> Pause on the node if (node.type == XXXX) and (previousNode == YYYY)
+						 * 'XXXX not preceded by YYYY' 	=> Pause on the node if (node.type == XXXX) and (previousNode != YYYY)
+						 *
+						 * NB: a 'not preceded by' must also be defined alone to work properly. fi : 'ExpressionStatement'
+						 */
+						scope.$interestingNodeTypes = function() {
+							return [
 								'ExpressionStatement',
 								'VariableDeclaration',
 								'ReturnStatement',
 
-								'ForStatement > UpdateExpression',		// Ajoute une pause lors de l'update de la variable de boucle
-								'ForStatement > BinaryExpression',		// Ajoute une pause lors du check de la condition de boucle
-								'WhileStatement > BinaryExpression',	// Ajoute une pause lors du check de la condition de boucle
+								'UpdateExpression preceded by ForStatement',			// Ajoute une pause lors de l'update de la variable de boucle
+								'BinaryExpression preceded by ForStatement',			// Ajoute une pause lors du check de la condition de boucle
+								'BinaryExpression preceded by WhileStatement',			// Ajoute une pause lors du check de la condition de boucle
 
-								'!CallExpression > ExpressionStatement'	// Empêche une pause sur la fonction appelant une autre lorsque cette dernière a retournée une valeur
+								'ExpressionStatement not preceded by CallExpression'	// Empêche une pause sur la fonction appelant une autre lorsque cette dernière a retournée une valeur
 							];
-
-							var nodeTypeRequiresAPauseEvenWithPreviousNodeType 	= scope.$previousNode == null || nodeTypesToPauseOn.indexOf("!" + scope.$previousNode.type + " > " + node.type) == -1;
-							var nodeDifferentFromLastNodePausedOn 				= node != scope.$previousNodePausedOn;
-							var nodeTypeRequiresAPause 							= nodeTypesToPauseOn.indexOf(node.type) != -1 && nodeTypeRequiresAPauseEvenWithPreviousNodeType;
-							var nodeTypeRequiresAPauseDueToPreviousNodeType 	= scope.$previousNode != null && nodeTypesToPauseOn.indexOf(scope.$previousNode.type + " > " + node.type) != -1;
-
-							var nodeRequiringAPause 							= (nodeTypeRequiresAPause && nodeDifferentFromLastNodePausedOn) || nodeTypeRequiresAPauseDueToPreviousNodeType;
-
-							if (nodeRequiringAPause) {
-								scope.$previousNodePausedOn = node;
-								scope.$previousNode = node;
-							}
-							return nodeRequiringAPause;
 						};
 
-						scope.$lastMarkedLine = null;
-						// @param type : 'detailed-step-by-step', 'instruction-by-instruction'
-						scope.$next = function(type) {
+						/**
+						 * Dit si un step-by-step doit être mis en pause suite à l'arrivée sur un noeud.
+						 *
+						 * @param stepByStepType
+						 *        le type de stepByStep ('detailed-step-by-step', 'instruction-by-instruction')
+						 * @param node
+						 *        un noeud
+						 * @return true si le step-by-step doit être mis en pause.
+						 */
+						scope.$nodeRequiringAPause = function(stepByStepType, node) {
+							if (stepByStepType === 'instruction-by-instruction') {
+								var interestingNodeTypes = scope.$interestingNodeTypes();
+
+								var checkPrecededBy		= scope.$previousNode != null && interestingNodeTypes.indexOf(node.type + " preceded by " + scope.$previousNode.type) != -1;
+								var checkNotPrecededBy	= scope.$previousNode == null || interestingNodeTypes.indexOf(node.type + " not preceded by " + scope.$previousNode.type) == -1;
+								var checkInList			= interestingNodeTypes.indexOf(node.type) != -1 && checkNotPrecededBy;
+								var checkDifferentNode 	= node != scope.$previousNodePausedOn;
+
+								var requiresAPause 		= (checkInList && checkDifferentNode) || checkPrecededBy;
+
+								if (requiresAPause) {
+									scope.$previousNodePausedOn = node;
+									scope.$previousNode = node;
+								}
+								return requiresAPause;
+							}
+							// 'detailed-step-by-step'
+							return true;
+						};
+
+						/**
+						 * Marque la ligne correspondant au noeud en tant que prochaine instruction 
+						 * à exécuter et met en valeur le noeud au sein de cette ligne.
+						 */
+						scope.$highlightNode = function(node) {
+							scope.$editor.$select(
+								scope.$editor.$toPosition(node.start),
+								scope.$editor.$toPosition(node.end)
+							);
+
+							if (scope.$lastMarkedLine != null) {
+								scope.$editor.$unmarkLine(scope.$lastMarkedLine);
+							}
+
+							scope.$lastMarkedLine = scope.$editor.$toPosition(node.start).line;
+							scope.$editor.$markLine(scope.$lastMarkedLine);
+						};
+
+						/**
+						 * Démarque la ligne correspondant au noeud en tant que prochaine instruction 
+						 * à exécuter et supprime la mise en valeur du noeud au sein de cette ligne.
+						 */
+						scope.$unhighlightLastNodeHighlighted = function() {
+							if (scope.$lastMarkedLine != null) {
+								scope.$editor.$unmarkLine(scope.$lastMarkedLine);
+								scope.$editor.$select(scope.$editor.$toPosition(0));
+								scope.$lastMarkedLine = null;
+								scope.$previousNode = null;
+								scope.$previousNodePausedOn = null;
+							}
+						};
+
+						/**
+						 * Va à la prochaine étape d'un step-by-step.
+						 *
+						 * @param stepByStepType
+						 *        le type de stepByStep ('detailed-step-by-step', 'instruction-by-instruction')
+						 */
+						scope.$next = function(stepByStepType) {
 							node = scope.$script.$nextNode();
 
-							if(angular.isDefined(node)) {
+							if (angular.isDefined(node)) {
 								node = node.node;
-								//console.log(node);
-								
-								// Si c'est un noeud surlequel on doit s'arrêter
-								if (type == 'detailed-step-by-step' || (type == 'instruction-by-instruction' && scope.$nodeRequiringAPause(node))) {
-									scope.$editor.$select(
-										scope.$editor.$toPosition(node.start),
-										scope.$editor.$toPosition(node.end)
-									);
-
-									if (scope.$lastMarkedLine != null) {
-										scope.$editor.$unmarkLine(scope.$lastMarkedLine);
-									}
-
-									scope.$lastMarkedLine = scope.$editor.$toPosition(node.start).line;
-									scope.$editor.$markLine(scope.$lastMarkedLine);
-
+								// Faire une pause sur le noeud s'il le requiert, sinon aller au prochain
+								if (scope.$nodeRequiringAPause(stepByStepType, node)) {
+									scope.$highlightNode(node);
 								}
-								// Sinon, on va à la prochaine step
 								else {
 									scope.$previousNode = node;
 									if (!scope.$script.$step()) {
 										return;
 									}
-									scope.$next(type);
+									scope.$next(stepByStepType);
 									return;
 								}
 							}
-							// Si c'était la dernière step, on enlève les marquages
+							// Si c'était la dernière step, enlver les marquages
 							else {
-								scope.$editor.$unmarkLine(scope.$lastMarkedLine);
-								scope.$editor.$select(scope.$editor.$toPosition(0));
+								scope.$unhighlightLastNodeHighlighted();
 							}
 
 							if(!scope.$script.$step()) {
