@@ -71,58 +71,64 @@
     recoverable: (boolean: TRUE when the parser has a error recovery rule available for this particular error)
   }
 */
-var ValidatorBuilder = (function(){
-var o=function(k,v,o,l){for(o=o||{},l=k.length;l--;o[k[l]]=v);return o},$V0=[1,5],$V1=[1,6],$V2=[1,7],$V3=[1,10],$V4=[1,11],$V5=[1,12],$V6=[1,13],$V7=[1,5,6,7,9,10,12];
+var parser = (function(){
+var o=function(k,v,o,l){for(o=o||{},l=k.length;l--;o[k[l]]=v);return o},$V0=[1,8],$V1=[1,5],$V2=[1,6],$V3=[1,7],$V4=[1,11],$V5=[1,12],$V6=[1,13],$V7=[1,14],$V8=[1,5,6,7,9,10,11,21];
 var parser = {trace: function trace() { },
 yy: {},
-symbols_: {"error":2,"requests":3,"request":4,",":5,"EOF":6,".":7,"request_unit":8,">":9,"DEFINE_ERROR":10,"string":11,"ALIAS":12,"IDENTIFIER":13,"STR":14,"node":15,"RETURN":16,"ROOT":17,"FUNCTION":18,"$accept":0,"$end":1},
-terminals_: {2:"error",5:",",6:"EOF",7:".",9:">",10:"DEFINE_ERROR",12:"ALIAS",13:"IDENTIFIER",14:"STR",16:"RETURN",17:"ROOT",18:"FUNCTION"},
-productions_: [0,[3,3],[3,2],[4,3],[4,3],[4,3],[4,3],[4,1],[11,1],[8,1],[15,1],[15,1],[15,2],[15,1]],
+symbols_: {"error":2,"requests":3,"request":4,",":5,"EOF":6,".":7,"request_unit":8,">":9,"FILTER":10,"[":11,"DEFINE_ERROR":12,":":13,"string":14,"]":15,"ALIAS":16,"IDENTIFIER":17,"STR":18,"node":19,"(":20,")":21,"ROOT":22,"FUNCTION":23,"$accept":0,"$end":1},
+terminals_: {2:"error",5:",",6:"EOF",7:".",9:">",10:"FILTER",11:"[",12:"DEFINE_ERROR",13:":",15:"]",16:"ALIAS",17:"IDENTIFIER",18:"STR",20:"(",21:")",22:"ROOT",23:"FUNCTION"},
+productions_: [0,[3,3],[3,2],[4,3],[4,3],[4,3],[4,6],[4,6],[4,1],[14,1],[8,1],[8,3],[19,1],[19,2],[19,1],[19,1]],
 performAction: function anonymous(yytext, yyleng, yylineno, yy, yystate /* action[1] */, $$ /* vstack */, _$ /* lstack */) {
 /* this == yyval */
 
 var $0 = $$.length - 1;
 switch (yystate) {
 case 1:
-this.$ = ASTRequest.concat($$[$0-2], $$[$0-1]);
+this.$ = $ASTRequest.$concat($$[$0-2], $$[$0-1]);
 break;
 case 2:
-return ASTRequest.identity($$[$0-1]);
+return $ASTRequest.$identity($$[$0-1]);
 break;
 case 3:
-this.$ = ASTRequest.firstChild($$[$0-2], $$[$0]);
+this.$ = $ASTRequest.$firstChild($$[$0-2], $$[$0]);
 break;
 case 4:
-this.$ = ASTRequest.has($$[$0-2], $$[$0]);
+this.$ = $ASTRequest.$has($$[$0-2], $$[$0]);
 break;
 case 5:
-this.$ = ASTRequest.defineError($$[$0-2], $$[$0]);
+this.$ = $ASTRequest.$filter($$[$0-2], $$[$0]);
 break;
 case 6:
-this.$ = ASTRequest.alias($$[$0-2], $$[$0]);
+this.$ = $ASTRequest.$defineError($$[$0-5], $$[$0-1]);
 break;
-case 7: case 9:
-this.$ = ASTRequest.identity($$[$0]);
+case 7:
+this.$ = $ASTRequest.$alias($$[$0-5], $$[$0-1]);
 break;
-case 8:
+case 8: case 10:
+this.$ = $ASTRequest.$identity($$[$0]);
+break;
+case 9:
 this.$ = $$[$0].substring(1, $$[$0].length-1);
 break;
-case 10:
-this.$ = ASTRequest.node("return");
-break;
 case 11:
-this.$ = ASTRequest.rootNode();
+this.$ = $ASTRequest.$identity($$[$0-1]);
 break;
 case 12:
-this.$ = ASTRequest.functionNode($$[$0]);
+this.$ = $ASTRequest.$rootNode();
 break;
 case 13:
-this.$ = ASTRequest.node("function");
+this.$ = $ASTRequest.$functionNode($$[$0]);
+break;
+case 14:
+this.$ = $ASTRequest.$node("function");
+break;
+case 15:
+this.$ = $ASTRequest.$node($$[$0]);
 break;
 }
 },
-table: [{3:1,4:2,8:3,15:4,16:$V0,17:$V1,18:$V2},{1:[3]},{5:[1,8],6:[1,9],7:$V3,9:$V4,10:$V5,12:$V6},o($V7,[2,7]),o($V7,[2,9]),o($V7,[2,10]),o($V7,[2,11]),o($V7,[2,13],{13:[1,14]}),{4:15,8:3,15:4,16:$V0,17:$V1,18:$V2},{1:[2,2]},{8:16,15:4,16:$V0,17:$V1,18:$V2},{8:17,15:4,16:$V0,17:$V1,18:$V2},{11:18,14:[1,19]},{13:[1,20]},o($V7,[2,12]),{1:[2,1],7:$V3,9:$V4,10:$V5,12:$V6},o($V7,[2,3]),o($V7,[2,4]),o($V7,[2,5]),o($V7,[2,8]),o($V7,[2,6])],
-defaultActions: {9:[2,2]},
+table: [{3:1,4:2,8:3,17:$V0,19:4,20:$V1,22:$V2,23:$V3},{1:[3]},{5:[1,9],6:[1,10],7:$V4,9:$V5,10:$V6,11:$V7},o($V8,[2,8]),o($V8,[2,10]),{4:15,8:3,17:$V0,19:4,20:$V1,22:$V2,23:$V3},o($V8,[2,12]),o($V8,[2,14],{17:[1,16]}),o($V8,[2,15]),{4:17,8:3,17:$V0,19:4,20:$V1,22:$V2,23:$V3},{1:[2,2]},{8:18,17:$V0,19:4,20:$V1,22:$V2,23:$V3},{8:19,17:$V0,19:4,20:$V1,22:$V2,23:$V3},{8:20,17:$V0,19:4,20:$V1,22:$V2,23:$V3},{12:[1,21],16:[1,22]},{7:$V4,9:$V5,10:$V6,11:$V7,21:[1,23]},o($V8,[2,13]),{1:[2,1],7:$V4,9:$V5,10:$V6,11:$V7},o($V8,[2,3]),o($V8,[2,4]),o($V8,[2,5]),{13:[1,24]},{13:[1,25]},o($V8,[2,11]),{14:26,18:[1,27]},{17:[1,28]},{15:[1,29]},{15:[2,9]},{15:[1,30]},o($V8,[2,6]),o($V8,[2,7])],
+defaultActions: {10:[2,2],27:[2,9]},
 parseError: function parseError(str, hash) {
     if (hash.recoverable) {
         this.trace(str);
@@ -599,37 +605,37 @@ case 0:/* Skip les caractères vides (espaces) */
 break;
 case 1:return "INTEGER";
 break;
-case 2:return "ROOT";
+case 2:return "FUNCTION";
 break;
-case 3:return "FUNCTION";
+case 3:return "RETURN";
 break;
-case 4:return "RETURN";
+case 4:return "ALIAS";
 break;
-case 5:return "VAR";
+case 5:return "DEFINE_ERROR";
 break;
-case 6:return "ALIAS";
+case 6:return ",";
 break;
-case 7:return "DEFINE_ERROR";
+case 7:return ">";
 break;
-case 8:return ",";
+case 8:return ".";
 break;
-case 9:return ">";
+case 9:return "+";
 break;
-case 10:return ".";
+case 10:return "FILTER"
 break;
-case 11:return "+";
+case 11:return "(";
 break;
-case 12:return "(";
+case 12:return ")";
 break;
-case 13:return ")";
+case 13:return "[";
 break;
-case 14:return "[";
+case 14:return "]";
 break;
-case 15:return "]";
+case 15:return "{";
 break;
-case 16:return "{";
+case 16:return "}";
 break;
-case 17:return "}";
+case 17:return "!";
 break;
 case 18:return "STR"; /* "\"" ([^\"\\]*|"\\\""|"\\")* "\"" */
 break;
@@ -639,7 +645,7 @@ case 20:return "EOF"
 break;
 }
 },
-rules: [/^(?:\s+)/,/^(?:[0-9]+)/,/^(?:root\b)/,/^(?:function\b)/,/^(?:return\b)/,/^(?:var\b)/,/^(?:as\b)/,/^(?:with error message\b)/,/^(?:,)/,/^(?:>)/,/^(?:\.)/,/^(?:\+)/,/^(?:\()/,/^(?:\))/,/^(?:\[)/,/^(?:\])/,/^(?:\{)/,/^(?:\})/,/^(?:L?"(\\.|[^\\"])*")/,/^(?:[a-zA-Z][a-zA-Z0-9]*)/,/^(?:$)/],
+rules: [/^(?:\s+)/,/^(?:[0-9]+)/,/^(?:function\b)/,/^(?:return\b)/,/^(?:named\b)/,/^(?:error\b)/,/^(?:,)/,/^(?:>)/,/^(?:\.)/,/^(?:\+)/,/^(?:with\b)/,/^(?:\()/,/^(?:\))/,/^(?:\[)/,/^(?:\])/,/^(?:\{)/,/^(?:\})/,/^(?:!)/,/^(?:L?"(\\.|[^\\"])*")/,/^(?:[a-zA-Z][a-zA-Z0-9]*)/,/^(?:$)/],
 conditions: {"INITIAL":{"rules":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20],"inclusive":true}}
 });
 return lexer;

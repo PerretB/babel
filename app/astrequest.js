@@ -1,37 +1,47 @@
-var ASTRequest = (function() {
+(function(){
 
-  var __defined = function(element) {
-    return element != null && element != undefined;
-  };
+  var dependencies = [
 
-  var __undefined = function(element) {
-    return element == null || element == undefined;
-  };
+  ];
 
-  var __extends = function(child, mother) {
-    child.prototype = new mother();
-  };
+  var module = angular.module("babel.ast.request", dependencies);
 
+  /**
+  * Collection retourné par une fonction de validation.
+  *
+  * @param string alias Nom de l'erreur.
+  * @param string error Message d'erreur.
+  */
   var ValidationResult = function(alias, error) {
 
     this.__nextDefault = 0;
     this.errors = {};
 
-    if(__undefined(alias)) {
+    if(!angular.isDefined(alias)) {
       alias = this.__nextDefault;
       this.__nextDefault += 1;
     }
 
-    if(__defined(error)) {
+    if(angular.isDefined(error)) {
       this.errors[alias] = error;
     }
 
   };
 
+  /**
+  * Retourne true si la validation a réussi.
+  *
+  * @return boolean true si la validation a réussi.
+  */
   ValidationResult.prototype.isValid = function() {
     return this.length() <= 0;
   };
 
+  /**
+  * Nombre d'erreurs levées.
+  *
+  * @return Number Nombre d'erreurs levées.
+  */
   ValidationResult.prototype.length = function() {
     var size = 0;
     for (var key in this.errors) {
@@ -42,10 +52,19 @@ var ASTRequest = (function() {
     return size;
   };
 
+  /**
+  * Retourne un message d'erreur à partir du nom de l'erreur.
+  *
+  * @param string alias Nom de l'erreur.
+  * @return string Message d'erreur.
+  */
   ValidationResult.prototype.get = function(alias) {
     return this.errors[alias];
   };
 
+  /**
+  * Parcourt la liste des erreurs levées.
+  */
   ValidationResult.prototype.each = function(callback, args) {
 
     var run = true;
@@ -63,11 +82,17 @@ var ASTRequest = (function() {
 
   };
 
-  ValidationResult.prototype.add = function(alias, error) {
+  /**
+  * Ajoute une erreur.
+  *
+  * @param string | ValidationResult Message(s) d'erreurs.
+  * @param string alias (optionel) Nom de l'erreur.
+  */
+  ValidationResult.prototype.add = function(error, alias) {
 
-    if(alias instanceof ValidationResult) {
+    if(error instanceof ValidationResult) {
       var self = this;
-      alias.each(function() {
+      error.each(function() {
         self.errors[this.alias] = this.error;
       });
     }
@@ -80,6 +105,11 @@ var ASTRequest = (function() {
     }
   };
 
+  /**
+  * Collection contenant le résultat d'une requête.
+  *
+  * @param object | Array value (optionel) Valeurs.
+  */
   var RequestResult = function(value) {
     if(Array.isArray(value)) {
       this.nodes = value;
@@ -92,18 +122,35 @@ var ASTRequest = (function() {
     }
   };
 
+  /**
+  * Vérifie si des résultats ont été trouvés.
+  * @return boolean true si des résultats ont été retournés.
+  */
   RequestResult.prototype.isEmpty = function() {
     return this.nodes.length <= 0;
   };
 
+  /**
+  * @return Number Le nombre de résultats retournés.
+  */
   RequestResult.prototype.length = function() {
     return this.nodes.length;
   };
 
+  /**
+  * Retourne le ième résultat.
+  *
+  * @param Number i Numéro du résultat à retourné.
+  *
+  * @return object Le ième résultat retourné.
+  */
   RequestResult.prototype.get = function(i) {
     return this.nodes[i];
   };
 
+  /**
+  * Parcourt la liste des résultats.
+  */
   RequestResult.prototype.each = function(callback, args) {
 
     var run = true;
@@ -121,6 +168,9 @@ var ASTRequest = (function() {
 
   };
 
+  /**
+  * Ajoute un résultat.
+  */
   RequestResult.prototype.add = function(element) {
     if(element instanceof RequestResult) {
       this.nodes = this.nodes.concat(element.nodes);
@@ -135,6 +185,13 @@ var ASTRequest = (function() {
   */
   var Request = function() { };
 
+  /**
+  * Effectue une recherche sur un ou plusieurs noeud.
+  *
+  * @param Node | Array | RequestResult Noeud(s).
+  *
+  * @return RequestResult Le résultat de la requête.
+  */
   Request.prototype.find = function(node) {
 
     if(node instanceof Node) {
@@ -152,6 +209,17 @@ var ASTRequest = (function() {
       return result;
 
     }
+    else if(node instanceof Array) {
+
+      var result = new RequestResult();
+
+      for(var i = 0; i < node.length; ++i) {
+        result.add(self.__find(node[i]));
+      }
+
+      return result;
+
+    }
     else {
       return this.__find(new Node(node));
     }
@@ -159,11 +227,11 @@ var ASTRequest = (function() {
   };
 
   /**
-  * Tente de trouver quelque chose après un appel à init.
+  * Tente de trouver quelque chose après un appel à find.
   */
   Request.prototype.__find = function(node) {
 
-    if(__defined(node)) {
+    if(angular.isDefined(node)) {
       return new RequestResult(node);
     }
     else {
@@ -172,6 +240,13 @@ var ASTRequest = (function() {
 
   };
 
+  /**
+  * Valide un noeud à l'aide d'une requête.
+  *
+  * @param Node | Array | RequestResult node.
+  *
+  * @return ValidationResult Résultat de la validation.
+  */
   Request.prototype.validate = function(node) {
 
     var result = this.find(node);
@@ -196,7 +271,7 @@ var ASTRequest = (function() {
     this.second = second;
   };
 
-  __extends(ConcatRequest, Request);
+  ConcatRequest.prototype = new Request();
 
   ConcatRequest.prototype.__find = function(node) {
 
@@ -229,7 +304,7 @@ var ASTRequest = (function() {
     this.request = request;
   };
 
-  __extends(FirstChildRequest, Request);
+  FirstChildRequest.prototype = new Request();
 
   /**
   * Récupère les enfants du parent.
@@ -294,7 +369,7 @@ var ASTRequest = (function() {
     this.request = request;
   };
 
-  __extends(HasChildRequest, Request);
+  HasChildRequest.prototype = new Request();
 
   /**
   * Récupère les enfants de tous les parents.
@@ -355,7 +430,7 @@ var ASTRequest = (function() {
     this.type = type;
   };
 
-  __extends(NodeTypeRequest, Request);
+  NodeTypeRequest.prototype = new Request();
 
   NodeTypeRequest.prototype.__find = function(node) {
 
@@ -375,7 +450,7 @@ var ASTRequest = (function() {
     this.identifier = identifier;
   };
 
-  __extends(FunctionRequest, Request);
+  FunctionRequest.prototype = new Request();
 
   FunctionRequest.prototype.__find = function(node) {
 
@@ -393,74 +468,109 @@ var ASTRequest = (function() {
 
   };
 
-  var lib = {};
-
   /**
-  * Retourne une requête nulle, celle-ci retournera systématiquement le noeud
-  * passé en paramètre.
+  * Filtre
   */
-  lib.rootNode = function() {
-    return new Request();
+  var FilterRequest = function(findRequest, filterRequest) {
+    this.findRequest = findRequest;
+    this.filterRequest = filterRequest;
   };
 
-  /**
-  * Retourne la requête passée en paramètre.
-  */
-  lib.identity = function(request) {
-    return request;
+  FilterRequest.prototype = new Request();
+
+  FilterRequest.prototype.__find = function(node) {
+
+    var self = this;
+    RequestResult findResult = this.findRequest(node);
+    RequestResult filteredResult = new RequestResult();
+
+    findResult.each(function() {
+      if(!self.filterRequest.find(this).isEmpty()) {
+        filteredResult.add(this);
+      }
+    });
+
+    return filteredResult;
+
   };
 
-  /**
-  * Créée la concaténation du résultat des deux requêtes.
-  */
-  lib.concat = function(first, second) {
-    return new ConcatRequest(first, second);
-  };
+  module.service('$ASTRequest', function() {
 
-  /**
-  * Créée une requête sur les premiers enfant d'un ensemble d'éléments.
-  */
-  lib.firstChild = function(selector, request) {
-    return new FirstChildRequest(selector, request);
-  };
+    /**
+    * Retourne une requête nulle, celle-ci retournera systématiquement le noeud
+    * passé en paramètre.
+    */
+    this.$rootNode = function() {
+      return new Request();
+    };
 
-  /**
-  * Créée une requête sur les enfants d'un ensemble d'éléments.
-  */
-  lib.has = function(selector, request) {
-    return new HasChildRequest(selector, request);
-  };
+    /**
+    * Retourne la requête passée en paramètre.
+    */
+    this.$identity = function(request) {
+      return request;
+    };
 
-  /**
-  * Cherche un type de noeud.
-  */
-  lib.node = function(type) {
-    return new NodeTypeRequest(type);
-  };
+    /**
+    * Créée la concaténation du résultat des deux requêtes.
+    */
+    this.$concat = function(first, second) {
+      return new ConcatRequest(first, second);
+    };
 
-  /**
-  * Cherche une fonction particulière.
-  */
-  lib.functionNode = function(identifier) {
-    return new FunctionRequest(identifier);
-  };
+    /**
+    * Créée une requête sur les premiers enfant d'un ensemble d'éléments.
+    */
+    this.$firstChild = function(selector, request) {
+      return new FirstChildRequest(selector, request);
+    };
 
-  /**
-  * Assigne un alias à la requête.
-  */
-  lib.alias = function(request, alias) {
-    request.alias = alias;
-    return request;
-  };
+    /**
+    * Créée une requête sur les enfants d'un ensemble d'éléments.
+    */
+    this.$has = function(selector, request) {
+      return new HasChildRequest(selector, request);
+    };
 
-  /**
-  * Change le message d'erreur d'une requête.
-  */
-  lib.defineError = function(request, error) {
-    request.error = error;
-    return request;
-  };
+    /**
+    * Cherche un type de noeud.
+    */
+    this.$node = function(type) {
+      return new NodeTypeRequest(type);
+    };
 
-  return lib;
+    /**
+    * Cherche une fonction particulière.
+    */
+    this.$functionNode = function(identifier) {
+      return new FunctionRequest(identifier);
+    };
+
+    /**
+    * Assigne un alias à la requête.
+    */
+    this.$alias = function(request, alias) {
+      request.alias = alias;
+      return request;
+    };
+
+    /**
+    * Filtre le résultat d'une requête... par une autre requête.
+    */
+    this.$filter = function(request, filter) {
+      return new FilterRequest(request, filter);
+    };
+
+    /**
+    * Change le message d'erreur d'une requête.
+    */
+    this.$defineError = function(request, error) {
+      request.error = error;
+      return request;
+    };
+
+    return this;
+
+  });
 
 })();

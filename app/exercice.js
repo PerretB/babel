@@ -27,9 +27,10 @@
 
 					post: function(scope, iElem, iAttrs) {
 
-						var test = 'root ' +
-								   '. function sort with error message "Il n\'y a pas de fonction sort." as premiereErreur ' +
-								   '. return with error message "La fonction sort ne retourne rien." as secondeErreur';
+						var test =
+									 'root ' +
+								   '. function sort [error:"Il n\'y a pas de fonction sort."   ] [nammed:premiereErreur] ' +
+								   'with { return } [error:"La fonction sort ne retourne rien."] [nammed:secondeErreur ]';
 
 						scope.$cmdContent = "";
 						scope.$script = null;
@@ -43,13 +44,13 @@
 							scope.$script = $scripts.$build(scope.$code);
                             errors = scope.$script.$test(test);
                             msgs = [];
-                            
+
                             errors.each(function() {
-                               msgs.push(this.error); 
+                               msgs.push(this.error);
                             });
-                            
+
                             scope.$errors = msgs;
-                            
+
                             if(scope.$errors.length > 0) {
                                 scope.$script = null;
                             }
@@ -123,7 +124,7 @@
 						};
 
 						/**
-						 * Marque la ligne correspondant au noeud en tant que prochaine instruction 
+						 * Marque la ligne correspondant au noeud en tant que prochaine instruction
 						 * à exécuter et met en valeur le noeud au sein de cette ligne.
 						 */
 						scope.$highlightNode = function(node) {
@@ -141,7 +142,7 @@
 						};
 
 						/**
-						 * Démarque la ligne correspondant au noeud en tant que prochaine instruction 
+						 * Démarque la ligne correspondant au noeud en tant que prochaine instruction
 						 * à exécuter et supprime la mise en valeur du noeud au sein de cette ligne.
 						 */
 						scope.$unhighlightLastNodeHighlighted = function() {
