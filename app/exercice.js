@@ -29,8 +29,8 @@
 
 						var test =
 									 'root ' +
-								   '. function sort [error:"Il n\'y a pas de fonction sort."   ] [nammed:premiereErreur] ' +
-								   'with { return } [error:"La fonction sort ne retourne rien."] [nammed:secondeErreur ]';
+								   '. function sort [error:"Il n\'y a pas de fonction sort."   ] [named:premiereErreur] ' +
+								   'with { root . return } [error:"La fonction sort ne retourne rien."] [named:secondeErreur ]';
 
 						scope.$cmdContent = "";
 						scope.$script = null;
@@ -42,18 +42,18 @@
 
 						scope.$compile = function() {
 							scope.$script = $scripts.$build(scope.$code);
-                            errors = scope.$script.$test(test);
-                            msgs = [];
+              errors = scope.$script.$ast().validate(test);
+              msgs = [];
 
-                            errors.each(function() {
-                               msgs.push(this.error);
-                            });
+              errors.each(function() {
+                 msgs.push(this.error);
+              });
 
-                            scope.$errors = msgs;
+              scope.$errors = msgs;
 
-                            if(scope.$errors.length > 0) {
-                                scope.$script = null;
-                            }
+              if(scope.$errors.length > 0) {
+                  scope.$script = null;
+              }
 						};
 
 						scope.$execute = function() {

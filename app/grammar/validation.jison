@@ -11,11 +11,13 @@
 
 [0-9]+                  return "INTEGER";
 
+"root"                  return "ROOT";
 "function"              return "FUNCTION";
-"return"                return "RETURN";
+/*"return"                return "RETURN";*/
 "named"                 return "ALIAS";
 "error"                 return "DEFINE_ERROR";
 
+":"                     return ":";
 ","                     return ",";
 ">"                     return ">";
 "."                     return ".";

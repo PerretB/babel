@@ -1,7 +1,7 @@
 (function() {
 
   var dependencies = [
-
+    "babel.ast.request.parser"
   ];
 
   var module = angular.module("babel.ast", dependencies);
@@ -130,8 +130,8 @@
 
     var childs;
 
-    if (angular.isDefined(this.node.body)) {
-      if (Array.isArray(this.node.body)) {
+    if (angular.isDefined(this.$$node.body)) {
+      if (Array.isArray(this.$$node.body)) {
         childs = this.$$node.body;
       }
       else {
@@ -218,9 +218,29 @@
 
   AST.prototype = new Node();
 
-  module.constant('$AST', function(ast) {
-    return new AST(ast);
-  });
+  module.service('$AST', ["$ASTRequestParser", function($ASTRequestParser) {
+
+    AST.prototype.find = function(request) {
+      return this.request(request).find(this);
+    };
+
+    AST.prototype.validate = function(request) {
+      return this.request(request).validate(this);
+    };
+
+    AST.prototype.request = function(request) {
+      return $ASTRequestParser.$parse(request);
+    };
+
+    this.$create = function(ast) {
+      return new AST(ast);
+    };
+
+    this.$createNode = function(node) {
+      return new Node(node);
+    };
+
+  }]);
 
 
 })();

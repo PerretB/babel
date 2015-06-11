@@ -72,7 +72,7 @@
     for(var alias in this.errors) {
       var error = {alias:alias, error:this.errors[alias]};
 
-      if(__defined(args)) {
+      if(angular.isDefined(args)) {
         run = callback.apply(error, args);
       }
       else {
@@ -97,7 +97,7 @@
       });
     }
     else {
-      if(__undefined(alias)) {
+      if(!angular.isDefined(alias)) {
         alias = this.__nextDefault;
         this.__nextDefault += 1;
       }
@@ -114,7 +114,7 @@
     if(Array.isArray(value)) {
       this.nodes = value;
     }
-    else if(__defined(value)) {
+    else if(angular.isDefined(value)) {
       this.nodes = [value];
     }
     else {
@@ -157,7 +157,7 @@
 
     for(var i = 0; i < this.nodes.length && run !== false; ++i) {
 
-      if(__defined(args)) {
+      if(angular.isDefined(args)) {
         run = callback.apply(this.nodes[i], args);
       }
       else {
@@ -194,10 +194,7 @@
   */
   Request.prototype.find = function(node) {
 
-    if(node instanceof Node) {
-      return this.__find(node);
-    }
-    else if(node instanceof RequestResult) {
+    if(node instanceof RequestResult) {
 
       var result = new RequestResult();
       var self = this;
@@ -221,7 +218,7 @@
 
     }
     else {
-      return this.__find(new Node(node));
+      return this.__find(node);
     }
 
   };
@@ -252,7 +249,7 @@
     var result = this.find(node);
 
     if(result.isEmpty()) {
-      return new ValidationResult(this.alias, this.error);
+      return new ValidationResult(this.error, this.alias);
     }
     else {
       return new ValidationResult();
@@ -353,7 +350,7 @@
       var childs = this.find(node);
 
       if(childs.isEmpty()) {
-        result.add(this.alias, this.error);
+        result.add(this.error, this.alias);
       }
     }
 
@@ -415,7 +412,7 @@
       var childs = this.find(node);
 
       if(childs.isEmpty()) {
-        result.add(this.alias, this.error);
+        result.add(this.error, this.alias);
       }
     }
 
@@ -456,7 +453,7 @@
 
     if(node.is('function')) {
 
-      if(__defined(this.identifier) && node.identifier() != this.identifier) {
+      if(angular.isDefined(this.identifier) && node.identifier() != this.identifier) {
         return new RequestResult();
       }
 
@@ -481,16 +478,35 @@
   FilterRequest.prototype.__find = function(node) {
 
     var self = this;
-    RequestResult findResult = this.findRequest(node);
-    RequestResult filteredResult = new RequestResult();
+    var findResult = this.findRequest.find(node);
+    var filteredResult = new RequestResult();
 
     findResult.each(function() {
+
       if(!self.filterRequest.find(this).isEmpty()) {
         filteredResult.add(this);
       }
+
     });
 
     return filteredResult;
+
+  };
+
+  FilterRequest.prototype.validate = function(node) {
+
+    var result = new ValidationResult();
+    result.add(this.findRequest.validate(node));
+
+    if(result.isValid()) {
+      var childs = this.find(node);
+
+      if(childs.isEmpty()) {
+        result.add(this.error, this.alias);
+      }
+    }
+
+    return result;
 
   };
 

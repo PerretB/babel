@@ -75,8 +75,8 @@ var parser = (function(){
 var o=function(k,v,o,l){for(o=o||{},l=k.length;l--;o[k[l]]=v);return o},$V0=[1,8],$V1=[1,5],$V2=[1,6],$V3=[1,7],$V4=[1,11],$V5=[1,12],$V6=[1,13],$V7=[1,14],$V8=[1,5,6,7,9,10,11,21];
 var parser = {trace: function trace() { },
 yy: {},
-symbols_: {"error":2,"requests":3,"request":4,",":5,"EOF":6,".":7,"request_unit":8,">":9,"FILTER":10,"[":11,"DEFINE_ERROR":12,":":13,"string":14,"]":15,"ALIAS":16,"IDENTIFIER":17,"STR":18,"node":19,"(":20,")":21,"ROOT":22,"FUNCTION":23,"$accept":0,"$end":1},
-terminals_: {2:"error",5:",",6:"EOF",7:".",9:">",10:"FILTER",11:"[",12:"DEFINE_ERROR",13:":",15:"]",16:"ALIAS",17:"IDENTIFIER",18:"STR",20:"(",21:")",22:"ROOT",23:"FUNCTION"},
+symbols_: {"error":2,"requests":3,"request":4,",":5,"EOF":6,".":7,"request_unit":8,">":9,"FILTER":10,"[":11,"DEFINE_ERROR":12,":":13,"string":14,"]":15,"ALIAS":16,"IDENTIFIER":17,"STR":18,"node":19,"{":20,"}":21,"ROOT":22,"FUNCTION":23,"$accept":0,"$end":1},
+terminals_: {2:"error",5:",",6:"EOF",7:".",9:">",10:"FILTER",11:"[",12:"DEFINE_ERROR",13:":",15:"]",16:"ALIAS",17:"IDENTIFIER",18:"STR",20:"{",21:"}",22:"ROOT",23:"FUNCTION"},
 productions_: [0,[3,3],[3,2],[4,3],[4,3],[4,3],[4,6],[4,6],[4,1],[14,1],[8,1],[8,3],[19,1],[19,2],[19,1],[19,1]],
 performAction: function anonymous(yytext, yyleng, yylineno, yy, yystate /* action[1] */, $$ /* vstack */, _$ /* lstack */) {
 /* this == yyval */
@@ -605,48 +605,50 @@ case 0:/* Skip les caractères vides (espaces) */
 break;
 case 1:return "INTEGER";
 break;
-case 2:return "FUNCTION";
+case 2:return "ROOT";
 break;
-case 3:return "RETURN";
+case 3:return "FUNCTION";
 break;
 case 4:return "ALIAS";
 break;
 case 5:return "DEFINE_ERROR";
 break;
-case 6:return ",";
+case 6:return ":";
 break;
-case 7:return ">";
+case 7:return ",";
 break;
-case 8:return ".";
+case 8:return ">";
 break;
-case 9:return "+";
+case 9:return ".";
 break;
-case 10:return "FILTER"
+case 10:return "+";
 break;
-case 11:return "(";
+case 11:return "FILTER"
 break;
-case 12:return ")";
+case 12:return "(";
 break;
-case 13:return "[";
+case 13:return ")";
 break;
-case 14:return "]";
+case 14:return "[";
 break;
-case 15:return "{";
+case 15:return "]";
 break;
-case 16:return "}";
+case 16:return "{";
 break;
-case 17:return "!";
+case 17:return "}";
 break;
-case 18:return "STR"; /* "\"" ([^\"\\]*|"\\\""|"\\")* "\"" */
+case 18:return "!";
 break;
-case 19:return "IDENTIFIER";
+case 19:return "STR"; /* "\"" ([^\"\\]*|"\\\""|"\\")* "\"" */
 break;
-case 20:return "EOF"
+case 20:return "IDENTIFIER";
+break;
+case 21:return "EOF"
 break;
 }
 },
-rules: [/^(?:\s+)/,/^(?:[0-9]+)/,/^(?:function\b)/,/^(?:return\b)/,/^(?:named\b)/,/^(?:error\b)/,/^(?:,)/,/^(?:>)/,/^(?:\.)/,/^(?:\+)/,/^(?:with\b)/,/^(?:\()/,/^(?:\))/,/^(?:\[)/,/^(?:\])/,/^(?:\{)/,/^(?:\})/,/^(?:!)/,/^(?:L?"(\\.|[^\\"])*")/,/^(?:[a-zA-Z][a-zA-Z0-9]*)/,/^(?:$)/],
-conditions: {"INITIAL":{"rules":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20],"inclusive":true}}
+rules: [/^(?:\s+)/,/^(?:[0-9]+)/,/^(?:root\b)/,/^(?:function\b)/,/^(?:named\b)/,/^(?:error\b)/,/^(?::)/,/^(?:,)/,/^(?:>)/,/^(?:\.)/,/^(?:\+)/,/^(?:with\b)/,/^(?:\()/,/^(?:\))/,/^(?:\[)/,/^(?:\])/,/^(?:\{)/,/^(?:\})/,/^(?:!)/,/^(?:L?"(\\.|[^\\"])*")/,/^(?:[a-zA-Z][a-zA-Z0-9]*)/,/^(?:$)/],
+conditions: {"INITIAL":{"rules":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21],"inclusive":true}}
 });
 return lexer;
 })();

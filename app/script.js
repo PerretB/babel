@@ -1,12 +1,12 @@
 (function() {
 
 	var dependencies = [
-
+		"babel.ast"
 	];
 
 	var module = angular.module("babel.script", dependencies);
 
-	module.service("$scripts", function() {
+	module.service("$scripts", ["$AST", function($AST) {
 
 		/**
 		* Initialise un interpréteur, et ajoute la fonction alert/print
@@ -66,7 +66,7 @@
 				return false;
 			}
 		};
-				
+
 		/**
 		 * Test un script.
 		 */
@@ -74,15 +74,6 @@
 			var validator = ValidatorBuilder.parse(test);
 			return validator.validate(this.$ast());
 		};
-		
-		/**
-		 * Cherche des noeuds
-		 * 
-		 */
-		Script.prototype.$find = function(query) {
-			var request = ValidatorBuilder.parse(query);
-			return request.find(this.$ast());
-		}
 
 		/**
 		* Execute le script, et retourne le résultat.
@@ -104,101 +95,6 @@
 			else {
 				return null;
 			}
-		};
-
-		/**
-		* Parcourt récursif
-		*/
-		var $_walkAst = function(callback, node, args) {
-
-			var continueWalk;
-
-			// Appel du callback sur le noeud en cours
-			if(angular.isDefined(args)) {
-				continueWalk = callback.apply(node, args);
-			}
-			else {
-				continueWalk = callback.call(node, node);
-			}
-
-			// Si pas de body, ou demande d'arrêt retour.
-			if (continueWalk === false || !angular.isDefined(node.body)) {
-				return;
-			}
-			else if (Array.isArray(node.body)) {
-				for (var i = 0; i < node.body.length; ++i) {
-					$_walkAst(callback, node.body[i], args);
-				}
-			}
-			else {
-				for (var i = 0; i < node.body.body.length; ++i) {
-					$_walkAst(callback, node.body.body[i], args);
-				}
-			}
-
-		};
-
-		/**
-		* Marche le long de l'AST et appelle une fonction sur
-		* chaque noeud.
-		*
-		* @param callback fonction rappellée, this pour accéder au noeud, si retourne false, alors on arrête la marche dans la branche actuelle.
-		*/
-		Script.prototype.$walkAst = function(callback, args) {
-			$_walkAst(callback, this.$ast(), args);
-		};
-
-		/**
-		* Vérifie qu'un noeud existe dans l'arbre.
-		*
-		* @param string type type de noeud.
-		* @return boolean true si le noeud existe.
-		*/
-		Script.prototype.$containsNode = function(type) {
-
-			var result = false;
-
-			this.$walkAst(function() {
-				if(result) {
-					return false;
-				}
-				else if(this.type == type) {
-					result = true;
-					return false;
-				}
-			});
-
-			return result;
-
-		};
-
-		/**
-		* Test l'existence d'une fonction.
-		*
-		* @param string functionName
-		*   Nom de la fonction
-		*
-		* @return boolean true si la fonction existe.
-		*/
-		Script.prototype.containsFunctionCall = function(functionName) {
-			var result = false;
-
-			this.$walkAst(function() {
-				if(result) {
-					return false;
-				}
-
-				if (this.type == 'ExpressionStatement') {
-					if (this.expression.type == "CallExpression") {
-						if (this.expression.callee.name == functionName) {
-							result = true;
-							return false;
-						}
-					}
-				}
-			});
-
-			return result;
 		};
 
 		/**
@@ -230,7 +126,7 @@
 		*/
 		Script.prototype.$nextNode = function() {
 			if(angular.isDefined(this.$interpreter)) {
-				return this.$interpreter.stateStack[0];
+				return $AST.$createNode(this.$interpreter.stateStack[0]);
 			}
 			else {
 				return null;
@@ -242,7 +138,7 @@
 		*/
 		Script.prototype.$ast = function() {
 			if(angular.isDefined(this.$interpreter)) {
-				return this.$interpreter.ast;
+				return $AST.$create(this.$interpreter.ast);
 			}
 			else {
 				return null;
@@ -263,6 +159,6 @@
 
 		return this;
 
-	});
+	}]);
 
 })();
