@@ -264,7 +264,7 @@
 		};
 		
 		/**
-		* @return Object dump des variables
+		* @return Object pile d'appels
 		*/
 		Script.prototype.$getStack = function(scope, Node) {
 			if(angular.isDefined(this.$interpreter)) {
@@ -276,7 +276,7 @@
 						scope.$stack.pop();
 					// Si la fonction ne s'est pas encore exécutée, on l'ajoute dans la pile (avec ses arguments)
 					else if (Node.doneCallee_ === undefined) {
-						var str = "(";
+						var str = "";
 						for (argument in node.arguments) {
 							if (node.arguments[argument].type == "Identifier") {
 								if (scope.$dumpLocal[node.arguments[argument].name] !== undefined)
@@ -290,9 +290,10 @@
 								str=str+node.arguments[argument].raw;
 							str=str+",";
 						}
-						scope.$stack.push(node.callee.name+str.substring(0,str.length-1)+")");		
+						scope.$stack.push(node.callee.name+"("+str.substring(0,str.length-1)+")");		
 					}																		
 				}
+				scope.$stack.reverse();
 				return scope.$stack;
 			}
 			else {

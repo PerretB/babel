@@ -43,7 +43,7 @@
   <div class="row">
 	<fieldset>
 	<legend>Pile d'appels</legend>
-    <ul><li ng-repeat="key in $stack">{{key}}</li></ul>
+    <ul><li ng-repeat="key in $stack track by $index">{{key}}</li></ul>
 	</fieldset>
   </div>
   
