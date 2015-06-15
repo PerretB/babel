@@ -22,7 +22,8 @@
 ">"                     return ">";
 "."                     return ".";
 "+"                     return "+";
-"with"                  return "FILTER"
+"with"                  return "FILTER";
+"not with"              return "NEGFILTER";
 
 "("                     return "(";
 ")"                     return ")";
@@ -53,6 +54,7 @@ request :
           request '.' request_unit    {$$ = $ASTRequest.$firstChild($1, $3);}
         | request '>' request_unit    {$$ = $ASTRequest.$has($1, $3);}
         | request FILTER request_unit {$$ = $ASTRequest.$filter($1, $3);}
+        | request NEGFILTER request_unit          {$$ = $ASTRequest.$negfilter($1, $3);}
         | request '[' DEFINE_ERROR ':' string ']' {$$ = $ASTRequest.$defineError($1, $5);}
         | request '[' ALIAS ':' IDENTIFIER ']'    {$$ = $ASTRequest.$alias($1, $5);}
         | request_unit                {$$ = $ASTRequest.$identity($1);}

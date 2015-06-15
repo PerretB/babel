@@ -42,16 +42,18 @@
 		*/
 		var Script = function(code) {
 			this.$code = code;
+			this.$start();
+		};
 
+		Script.prototype.$start = function() {
 			try {
-				this.$interpreter = new Interpreter(code, initInterpreter);
+				this.$interpreter = new Interpreter(this.$code, initInterpreter);
 			}
 			catch(e) {
 				this.$interpreter = undefined;
 				this.$error = e;
 			}
 			finally {}
-
 		};
 
 		/**
@@ -121,12 +123,73 @@
 			}
 		};
 
+		function toObject(value) {
+			if(value.isPrimitive) {
+				return value.data;
+			}
+			else {
+				var result = {};
+
+				for(var key in value.properties) {
+						result[key] = toObject(value.properties[key]);
+				}
+
+				return result;
+			}
+		}
+
+		Script.prototype.$call = function(functionName) {
+
+			var query = functionName;
+
+			var queryArgs = [];
+
+			for(var i = 1; i < arguments.length; ++i) {
+				queryArgs.push(JSON.stringify(arguments[i]));
+			}
+
+			query += "( " + queryArgs.join(', ') + " );";
+
+			return this.$do(query);
+
+		}
+
+		Script.prototype.$do = function(code) {
+
+			$tmpScript = new Script(code);
+
+			$expression = $tmpScript.$ast().find("root > Expression");
+
+			this.$start();
+
+			do {
+				this.$step();
+			} while(!this.$nextNode().is('program'));
+
+			this.$interpreter.stateStack.unshift({node:$expression.nodes[0].$$node});
+
+			this.$run();
+
+			var value = this.$interpreter.value;
+
+			if(value.isPrimitive) {
+				value = {cmd:this.$cmd(), returned:value.valueOf()};
+			}
+			else {
+				value = {cmd:this.$cmd(), returned:toObject(value)};
+			}
+
+			this.$start();
+			return value;
+
+		};
+
 		/**
 		* @return Object prochain noeud exécuté.
 		*/
 		Script.prototype.$nextNode = function() {
-			if(angular.isDefined(this.$interpreter)) {
-				return $AST.$createNode(this.$interpreter.stateStack[0]);
+			if(angular.isDefined(this.$interpreter) && this.$interpreter.stateStack.length > 0) {
+				return $AST.$createNode(this.$interpreter.stateStack[0].node);
 			}
 			else {
 				return null;

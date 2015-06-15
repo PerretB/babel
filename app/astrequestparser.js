@@ -9,12 +9,12 @@
   module.service("$ASTRequestParser", ["$ASTRequest", function($ASTRequest) {
 
     var parser = (function(){
-    var o=function(k,v,o,l){for(o=o||{},l=k.length;l--;o[k[l]]=v);return o},$V0=[1,8],$V1=[1,5],$V2=[1,6],$V3=[1,7],$V4=[1,11],$V5=[1,12],$V6=[1,13],$V7=[1,14],$V8=[1,5,6,7,9,10,11,21];
+    var o=function(k,v,o,l){for(o=o||{},l=k.length;l--;o[k[l]]=v);return o},$V0=[1,8],$V1=[1,5],$V2=[1,6],$V3=[1,7],$V4=[1,11],$V5=[1,12],$V6=[1,13],$V7=[1,14],$V8=[1,15],$V9=[1,5,6,7,9,10,11,12,22];
     var parser = {trace: function trace() { },
     yy: {},
-    symbols_: {"error":2,"requests":3,"request":4,",":5,"EOF":6,".":7,"request_unit":8,">":9,"FILTER":10,"[":11,"DEFINE_ERROR":12,":":13,"string":14,"]":15,"ALIAS":16,"IDENTIFIER":17,"STR":18,"node":19,"{":20,"}":21,"ROOT":22,"FUNCTION":23,"$accept":0,"$end":1},
-    terminals_: {2:"error",5:",",6:"EOF",7:".",9:">",10:"FILTER",11:"[",12:"DEFINE_ERROR",13:":",15:"]",16:"ALIAS",17:"IDENTIFIER",18:"STR",20:"{",21:"}",22:"ROOT",23:"FUNCTION"},
-    productions_: [0,[3,3],[3,2],[4,3],[4,3],[4,3],[4,6],[4,6],[4,1],[14,1],[8,1],[8,3],[19,1],[19,2],[19,1],[19,1]],
+    symbols_: {"error":2,"requests":3,"request":4,",":5,"EOF":6,".":7,"request_unit":8,">":9,"FILTER":10,"NEGFILTER":11,"[":12,"DEFINE_ERROR":13,":":14,"string":15,"]":16,"ALIAS":17,"IDENTIFIER":18,"STR":19,"node":20,"{":21,"}":22,"ROOT":23,"FUNCTION":24,"$accept":0,"$end":1},
+    terminals_: {2:"error",5:",",6:"EOF",7:".",9:">",10:"FILTER",11:"NEGFILTER",12:"[",13:"DEFINE_ERROR",14:":",16:"]",17:"ALIAS",18:"IDENTIFIER",19:"STR",21:"{",22:"}",23:"ROOT",24:"FUNCTION"},
+    productions_: [0,[3,3],[3,2],[4,3],[4,3],[4,3],[4,3],[4,6],[4,6],[4,1],[15,1],[8,1],[8,3],[20,1],[20,2],[20,1],[20,1]],
     performAction: function anonymous(yytext, yyleng, yylineno, yy, yystate /* action[1] */, $$ /* vstack */, _$ /* lstack */) {
     /* this == yyval */
 
@@ -36,36 +36,39 @@
     this.$ = $ASTRequest.$filter($$[$0-2], $$[$0]);
     break;
     case 6:
-    this.$ = $ASTRequest.$defineError($$[$0-5], $$[$0-1]);
+    this.$ = $ASTRequest.$negfilter($$[$0-2], $$[$0]);
     break;
     case 7:
+    this.$ = $ASTRequest.$defineError($$[$0-5], $$[$0-1]);
+    break;
+    case 8:
     this.$ = $ASTRequest.$alias($$[$0-5], $$[$0-1]);
     break;
-    case 8: case 10:
+    case 9: case 11:
     this.$ = $ASTRequest.$identity($$[$0]);
     break;
-    case 9:
+    case 10:
     this.$ = $$[$0].substring(1, $$[$0].length-1);
     break;
-    case 11:
+    case 12:
     this.$ = $ASTRequest.$identity($$[$0-1]);
     break;
-    case 12:
+    case 13:
     this.$ = $ASTRequest.$rootNode();
     break;
-    case 13:
+    case 14:
     this.$ = $ASTRequest.$functionNode($$[$0]);
     break;
-    case 14:
+    case 15:
     this.$ = $ASTRequest.$node("function");
     break;
-    case 15:
+    case 16:
     this.$ = $ASTRequest.$node($$[$0]);
     break;
     }
     },
-    table: [{3:1,4:2,8:3,17:$V0,19:4,20:$V1,22:$V2,23:$V3},{1:[3]},{5:[1,9],6:[1,10],7:$V4,9:$V5,10:$V6,11:$V7},o($V8,[2,8]),o($V8,[2,10]),{4:15,8:3,17:$V0,19:4,20:$V1,22:$V2,23:$V3},o($V8,[2,12]),o($V8,[2,14],{17:[1,16]}),o($V8,[2,15]),{4:17,8:3,17:$V0,19:4,20:$V1,22:$V2,23:$V3},{1:[2,2]},{8:18,17:$V0,19:4,20:$V1,22:$V2,23:$V3},{8:19,17:$V0,19:4,20:$V1,22:$V2,23:$V3},{8:20,17:$V0,19:4,20:$V1,22:$V2,23:$V3},{12:[1,21],16:[1,22]},{7:$V4,9:$V5,10:$V6,11:$V7,21:[1,23]},o($V8,[2,13]),{1:[2,1],7:$V4,9:$V5,10:$V6,11:$V7},o($V8,[2,3]),o($V8,[2,4]),o($V8,[2,5]),{13:[1,24]},{13:[1,25]},o($V8,[2,11]),{14:26,18:[1,27]},{17:[1,28]},{15:[1,29]},{15:[2,9]},{15:[1,30]},o($V8,[2,6]),o($V8,[2,7])],
-    defaultActions: {10:[2,2],27:[2,9]},
+    table: [{3:1,4:2,8:3,18:$V0,20:4,21:$V1,23:$V2,24:$V3},{1:[3]},{5:[1,9],6:[1,10],7:$V4,9:$V5,10:$V6,11:$V7,12:$V8},o($V9,[2,9]),o($V9,[2,11]),{4:16,8:3,18:$V0,20:4,21:$V1,23:$V2,24:$V3},o($V9,[2,13]),o($V9,[2,15],{18:[1,17]}),o($V9,[2,16]),{4:18,8:3,18:$V0,20:4,21:$V1,23:$V2,24:$V3},{1:[2,2]},{8:19,18:$V0,20:4,21:$V1,23:$V2,24:$V3},{8:20,18:$V0,20:4,21:$V1,23:$V2,24:$V3},{8:21,18:$V0,20:4,21:$V1,23:$V2,24:$V3},{8:22,18:$V0,20:4,21:$V1,23:$V2,24:$V3},{13:[1,23],17:[1,24]},{7:$V4,9:$V5,10:$V6,11:$V7,12:$V8,22:[1,25]},o($V9,[2,14]),{1:[2,1],7:$V4,9:$V5,10:$V6,11:$V7,12:$V8},o($V9,[2,3]),o($V9,[2,4]),o($V9,[2,5]),o($V9,[2,6]),{14:[1,26]},{14:[1,27]},o($V9,[2,12]),{15:28,19:[1,29]},{18:[1,30]},{16:[1,31]},{16:[2,10]},{16:[1,32]},o($V9,[2,7]),o($V9,[2,8])],
+    defaultActions: {10:[2,2],29:[2,10]},
     parseError: function parseError(str, hash) {
         if (hash.recoverable) {
             this.trace(str);
@@ -560,32 +563,34 @@
     break;
     case 10:return "+";
     break;
-    case 11:return "FILTER"
+    case 11:return "FILTER";
     break;
-    case 12:return "(";
+    case 12:return "NEGFILTER";
     break;
-    case 13:return ")";
+    case 13:return "(";
     break;
-    case 14:return "[";
+    case 14:return ")";
     break;
-    case 15:return "]";
+    case 15:return "[";
     break;
-    case 16:return "{";
+    case 16:return "]";
     break;
-    case 17:return "}";
+    case 17:return "{";
     break;
-    case 18:return "!";
+    case 18:return "}";
     break;
-    case 19:return "STR"; /* "\"" ([^\"\\]*|"\\\""|"\\")* "\"" */
+    case 19:return "!";
     break;
-    case 20:return "IDENTIFIER";
+    case 20:return "STR"; /* "\"" ([^\"\\]*|"\\\""|"\\")* "\"" */
     break;
-    case 21:return "EOF"
+    case 21:return "IDENTIFIER";
+    break;
+    case 22:return "EOF"
     break;
     }
     },
-    rules: [/^(?:\s+)/,/^(?:[0-9]+)/,/^(?:root\b)/,/^(?:function\b)/,/^(?:named\b)/,/^(?:error\b)/,/^(?::)/,/^(?:,)/,/^(?:>)/,/^(?:\.)/,/^(?:\+)/,/^(?:with\b)/,/^(?:\()/,/^(?:\))/,/^(?:\[)/,/^(?:\])/,/^(?:\{)/,/^(?:\})/,/^(?:!)/,/^(?:L?"(\\.|[^\\"])*")/,/^(?:[a-zA-Z][a-zA-Z0-9]*)/,/^(?:$)/],
-    conditions: {"INITIAL":{"rules":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21],"inclusive":true}}
+    rules: [/^(?:\s+)/,/^(?:[0-9]+)/,/^(?:root\b)/,/^(?:function\b)/,/^(?:named\b)/,/^(?:error\b)/,/^(?::)/,/^(?:,)/,/^(?:>)/,/^(?:\.)/,/^(?:\+)/,/^(?:with\b)/,/^(?:not with\b)/,/^(?:\()/,/^(?:\))/,/^(?:\[)/,/^(?:\])/,/^(?:\{)/,/^(?:\})/,/^(?:!)/,/^(?:L?"(\\.|[^\\"])*")/,/^(?:[a-zA-Z][a-zA-Z0-9]*)/,/^(?:$)/],
+    conditions: {"INITIAL":{"rules":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22],"inclusive":true}}
     });
     return lexer;
     })();

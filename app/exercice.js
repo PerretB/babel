@@ -43,9 +43,20 @@
 						scope.$compile = function() {
 							scope.$script = $scripts.$build(scope.$code);
               errors = scope.$script.$ast().validate(test);
+
+							var functions = scope.$script.$ast().find("root > Statement").nodes;
+							var node = functions[0];
+
               msgs = [];
 
-              errors.each(function() {
+							console.log(scope.$script.$call("SimplePrint", 1, 2, 3));
+							console.log(scope.$script.$call("SimplePrint", "bla", [0,1], {do:"it"}));
+
+							/*console.log(scope.$script.$do("SimplePrint(2,3,4);"));
+							console.log(scope.$script.$do("SimplePrint(4,5,6);"));
+							console.log(scope.$script.$do("SimplePrint(7,8,9);"));*/
+
+              /*errors.each(function() {
                  msgs.push(this.error);
               });
 
@@ -53,7 +64,7 @@
 
               if(scope.$errors.length > 0) {
                   scope.$script = null;
-              }
+              }*/
 						};
 
 						scope.$execute = function() {
@@ -194,30 +205,13 @@
 						};
 
 						scope.$editor.$concat(" ");
-						scope.$editor.$concat("function sort (toSort) {");
-						scope.$editor.$concat("	var result = [];");
-						scope.$editor.$concat("	function test() {};");
-						scope.$editor.$concat(" ");
-						scope.$editor.$concat("	var a = 0; a++;");
-						scope.$editor.$concat("	var c = 4 + a;");
-						scope.$editor.$concat("	var b; b = 2; ++b;");
-						scope.$editor.$concat("");
-						scope.$editor.$concat("	for (var i = 0; i < 2; ++i) {");
-						scope.$editor.$concat("		c += i; c += a;");
-						scope.$editor.$concat("	}");
-						scope.$editor.$concat("");
-						scope.$editor.$concat("	while (b > 0) {");
-						scope.$editor.$concat("		alert(b);");
-						scope.$editor.$concat("		b--;");
-						scope.$editor.$concat("	}");
-						scope.$editor.$concat("");
-						scope.$editor.$concat("	return result;");
+						scope.$editor.$concat("function SimplePrint (a, b, c) {");
+						scope.$editor.$concat("	print(a);");
 						scope.$editor.$concat("}");
-						scope.$editor.$concat("var w = sort('x');");
-						scope.$editor.$concat("sort('y');");
+						scope.$editor.$concat(" ");
 
-						scope.$editor.$lockLine(1);
-						scope.$editor.$lockLine(19);
+						/*scope.$editor.$lockLine(1);
+						scope.$editor.$lockLine(19);*/
 
 
 					}

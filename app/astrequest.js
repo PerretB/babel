@@ -386,7 +386,6 @@
 
   };
 
-
   HasChildRequest.prototype.__find = function(node) {
 
     var parents = this.selector.find(node);
@@ -510,6 +509,51 @@
 
   };
 
+  /**
+  * Negation Filtre
+  */
+  var NegFilterRequest = function(findRequest, filterRequest) {
+    this.findRequest = findRequest;
+    this.filterRequest = filterRequest;
+  };
+
+  NegFilterRequest.prototype = new Request();
+
+  NegFilterRequest.prototype.__find = function(node) {
+
+    var self = this;
+    var findResult = this.findRequest.find(node);
+    var filteredResult = new RequestResult();
+
+    findResult.each(function() {
+
+      if(self.filterRequest.find(this).isEmpty()) {
+        filteredResult.add(this);
+      }
+
+    });
+
+    return filteredResult;
+
+  };
+
+  NegFilterRequest.prototype.validate = function(node) {
+
+    var result = new ValidationResult();
+    result.add(this.findRequest.validate(node));
+
+    if(result.isValid()) {
+      var childs = this.find(node);
+
+      if(childs.isEmpty()) {
+        result.add(this.error, this.alias);
+      }
+    }
+
+    return result;
+
+  };
+
   module.service('$ASTRequest', function() {
 
     /**
@@ -575,6 +619,13 @@
     */
     this.$filter = function(request, filter) {
       return new FilterRequest(request, filter);
+    };
+
+    /**
+    * Filtre inversé du résultat d'une requête... par une autre requête.
+    */
+    this.$negfilter = function(request, filter) {
+      return new NegFilterRequest(request, filter);
     };
 
     /**

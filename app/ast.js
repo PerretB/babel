@@ -153,7 +153,7 @@
 
     var childs = this.$$childs();
 
-    if (angular.isDefined(childs)) {
+    if (childs != null && childs != undefined) {
       return childs.length;
     }
     else {
@@ -207,6 +207,19 @@
       }
     }
 
+  };
+
+  /**
+  * Liste les arguments d'une fonction.
+  */
+  Node.prototype.args = function() {
+    var args = new Array();
+
+    for(var i = 0; i < this.$$node.params.length; ++i) {
+      args.push(this.$$node.params[i].name);
+    }
+
+    return args;
   };
 
   /**
