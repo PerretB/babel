@@ -4,7 +4,8 @@
 		"babel.editor",
 		"babel.cmd",
 		"babel.script",
-		"babel.errors"
+		"babel.errors",
+		"babel.dump"
 	];
 
 	var module = angular.module("babel.exercice", dependencies);
@@ -53,6 +54,9 @@
                             if(scope.$errors.length > 0) {
                                 scope.$script = null;
                             }
+							scope.$stack = [];
+							scope.$dumpLocal = [];
+							scope.$dumpGlobal = [];
 						};
 
 						scope.$execute = function() {
@@ -161,13 +165,22 @@
 						 *        le type de stepByStep ('detailed-step-by-step', 'instruction-by-instruction')
 						 */
 						scope.$next = function(stepByStepType) {
-							node = scope.$script.$nextNode();
+							var Node = scope.$script.$nextNode();
 
-							if (angular.isDefined(node)) {
-								node = node.node;
+							if (angular.isDefined(Node)) {
+								var node = Node.node;
+								scope.$stack = scope.$script.$getStack(scope,Node);
+								
 								// Faire une pause sur le noeud s'il le requiert, sinon aller au prochain
 								if (scope.$nodeRequiringAPause(stepByStepType, node)) {
 									scope.$highlightNode(node);
+									var $dump = scope.$script.$getDump();
+									var global = $dump["global"]
+									delete $dump["global"];
+									if (global)
+										scope.$dumpGlobal = $dump;
+									else
+										scope.$dumpLocal = $dump;
 								}
 								else {
 									scope.$previousNode = node;

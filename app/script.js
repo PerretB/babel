@@ -26,11 +26,11 @@
 			};
 
 			interpreter.setProperty(codeScope, 'alert',
-				interpreter.createNativeFunction(wrapper)
+			interpreter.createNativeFunction(wrapper)
 			);
 
 			interpreter.setProperty(codeScope, 'print',
-				interpreter.createNativeFunction(wrapper)
+			interpreter.createNativeFunction(wrapper)
 			);
 
 		};
@@ -66,19 +66,19 @@
 				return false;
 			}
 		};
-				
+		
 		/**
-		 * Test un script.
-		 */
+		* Test un script.
+		*/
 		Script.prototype.$test = function(test) {
 			var validator = ValidatorBuilder.parse(test);
 			return validator.validate(this.$ast());
 		};
 		
 		/**
-		 * Cherche des noeuds
-		 * 
-		 */
+		* Cherche des noeuds
+		* 
+		*/
 		Script.prototype.$find = function(query) {
 			var request = ValidatorBuilder.parse(query);
 			return request.find(this.$ast());
@@ -224,7 +224,82 @@
 				return null;
 			}
 		};
+		
+		/**
+		* @return Object dump des variables
+		*/
+		Script.prototype.$getDump = function() {
+			if(angular.isDefined(this.$interpreter)) {
+				var nativeArguments = [ "Array","Boolean","Date","Function","Infinity","JSON","Math","NaN","Number","Object","RegExp","String","alert","decodeURI","decodeURIComponent","encodeURI","encodeURIComponent","escape","eval","isFinite","isNaN","parseFloat","parseInt","print","self","undefined","unescape","window","arguments" ]
+				var scope = this.$interpreter.getScope();
 
+				dictionary = {};
+				for (key in scope.properties) 
+				{
+					if (nativeArguments.indexOf(key) != -1 || scope.properties[key].type == "function" )
+					continue;
+					// Case of an array
+					if (scope.properties[key].type == "object") {
+						dictionary[key] = [];
+						for (key2 in scope.properties[key].properties) {
+							dictionary[key].push(scope.properties[key].properties[key2].raw);
+						}
+					}	
+					else if (scope.properties[key].data !== undefined) {
+						if (scope.properties[key].type == "string")
+						dictionary[key] = "'"+scope.properties[key].data+"'";
+						else if (scope.properties[key].type == "function")
+						dictionary[key] = "function";
+						else
+						dictionary[key] = scope.properties[key].data;
+					}
+					
+				}
+				dictionary["global"] = ("window" in scope.properties)
+				return dictionary;
+			}
+			else {
+				return null;
+			}
+		};
+		
+		/**
+		* @return Object dump des variables
+		*/
+		Script.prototype.$getStack = function(scope, Node) {
+			if(angular.isDefined(this.$interpreter)) {
+				var node = Node.node;
+				// Si le noeud est un appel a une fonction :
+				if (node.type == "CallExpression") {
+					// Si la fonction a fini de s'exécuter, on la retire de la pile
+					if (Node.doneExec !== undefined && Node.doneExec == true)
+						scope.$stack.pop();
+					// Si la fonction ne s'est pas encore exécutée, on l'ajoute dans la pile (avec ses arguments)
+					else if (Node.doneCallee_ === undefined) {
+						var str = "(";
+						for (argument in node.arguments) {
+							if (node.arguments[argument].type == "Identifier") {
+								if (scope.$dumpLocal[node.arguments[argument].name] !== undefined)
+									str=str+scope.$dumpLocal[node.arguments[argument].name];
+								else if (scope.$dumpGlobal[node.arguments[argument].name] !== undefined)
+									str=str+scope.$dumpGlobal[node.arguments[argument].name];
+								else
+									str=str+node.arguments[argument].name;
+							}					
+							else
+								str=str+node.arguments[argument].raw;
+							str=str+",";
+						}
+						scope.$stack.push(node.callee.name+str.substring(0,str.length-1)+")");		
+					}																		
+				}
+				return scope.$stack;
+			}
+			else {
+				return null;
+			}
+		};
+		
 		/**
 		* @return Object prochain noeud exécuté.
 		*/
