@@ -273,7 +273,7 @@
 				if (node.type == "CallExpression") {
 					// Si la fonction a fini de s'exécuter, on la retire de la pile
 					if (Node.doneExec !== undefined && Node.doneExec == true)
-						scope.$stack.pop();
+						scope.$stack.shift();
 					// Si la fonction ne s'est pas encore exécutée, on l'ajoute dans la pile (avec ses arguments)
 					else if (Node.doneCallee_ === undefined) {
 						var str = "";
@@ -290,10 +290,9 @@
 								str=str+node.arguments[argument].raw;
 							str=str+",";
 						}
-						scope.$stack.push(node.callee.name+"("+str.substring(0,str.length-1)+")");		
-					}																		
-				}
-				scope.$stack.reverse();
+						scope.$stack.unshift(node.callee.name+"("+str.substring(0,str.length-1)+")");		
+					}						
+				}	
 				return scope.$stack;
 			}
 			else {
