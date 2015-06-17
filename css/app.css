@@ -1,104 +1,115 @@
 html {
-      width:100%;
-      min-height:100%;
+    width:100%;
+    min-height:100%;
 }
 
 body {
-      margin:0px;
-      padding:0px;
-      height:100%;
-      width:100%;
+    margin:0px;
+    padding:0px;
+    height:100%;
+    width:100%;
 }
 
 .CodeMirror-code .CodeMirror-locked {
-  background-color: #EFEFEF;
-  text-align: right;
-  line-height: 20px;
-  vertical-align: middle;
-  color:#999999;
-  padding-right:5px;
+    background-color: #EFEFEF;
+    text-align: right;
+    line-height: 20px;
+    vertical-align: middle;
+    color:#999999;
+    padding-right:5px;
 }
 
 .CodeMirror-gutters {
-  width: 45px;
+    width: 45px;
 }
 
 .CodeMirror-code .CodeMirror-marked {
-  background-color: #E0DB9E !important;
+    background-color: #E0DB9E !important;
 }
 
 .breakpoint-marker {
-  color: #AEA31F;
+    color: #AEA31F;
 }
 
-
 .top-bar {
-  position:absolute;
-
-  top:0px;
-  left:0px;
-  right:0px;
-
-  height:50px;
-  width:auto;
+    position:absolute;
+    top:0px;
+    left:0px;
+    right:0px;
+    height:50px;
+    width:auto;
 }
 
 .right-panel {
-  position:absolute;
-
-  top:50px;
-  right:0px;
-  bottom:0px;
-
-  height:auto;
-  width:300px;
+    position:absolute;
+    top:50px;
+    right:0px;
+    bottom:0px;
+    height:auto;
+    width:500px;
 }
 
 .main-panel {
-  position: absolute;
-
-  top:50px;
-  left:0px;
-  right:300px;
-  bottom:0px;
-
-  border-right: 1px solid rgb(12, 16, 33);
-  border-top: 1px solid rgb(12, 16, 33);
-
-  height:auto;
-  width:auto;
+    position: absolute;
+    top:50px;
+    left:0px;
+    right:500px;
+    bottom:0px;
+    border-right: 1px solid rgb(12, 16, 33);
+    border-top: 1px solid rgb(12, 16, 33);
+    height:auto;
+    width:auto;
 }
 
 .main-panel .editor-panel {
-  position: absolute;
-
-  top:0px;
-  left:0px;
-  right:0px;
-
-  height:80%;
-  width:100%;
+    position: absolute;
+    top:0px;
+    left:0px;
+    right:0px;
+    height:80%;
+    width:100%;
 }
 
 .main-panel .cmd-panel {
-  position: absolute;
-
-  bottom:0px;
-  left:0px;
-  right:0px;
-
-  height:20%;
-  width:100%;
+    position: absolute;
+    bottom:0px;
+    left:0px;
+    right:0px;
+    height:20%;
+    width:100%;
 }
 
 .CodeMirror {
-  width:100%;
-  height:100%;
+    width:100%;
+    height:100%;
 }
 
 .exercice-category {
-      background-color:#22A7F0;
-      font-size: 3em;
-      font-weight:bold;
-      color:#FFFFFF;
+    background-color:#22A7F0;
+    font-size: 3em;
+    font-weight:bold;
+    color:#FFFFFF;
+}
+
+fieldset {
+    background-color: #F3F3F4;
+}
+
+legend {
+    margin-bottom: 10px !important;
+    padding-left: 10px !important;
+    font-size: 1em !important;
+    background-color: white;
+}
+
+.first-stack {
+    border-top: 1px solid #F3F3F4;
+}
+
+.errors {
+    margin-bottom: 50px;
+}
+
+.btn {
+    text-align: left !important;
 }
