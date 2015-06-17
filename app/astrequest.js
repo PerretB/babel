@@ -4,6 +4,9 @@
 
   ];
 
+  /**
+  * Package mettant à disposition le builder de requêtes.
+  */
   var module = angular.module("babel.ast.request", dependencies);
 
   /**
