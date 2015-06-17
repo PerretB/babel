@@ -4,15 +4,12 @@
 
 	];
 
+	/**
+	* Module regroupant les utilitaires pour gérer les editeurs de code.
+	*/
 	var module = angular.module("babel.editor", dependencies);
 
-  /**
-	 *	@ngdoc service
-	 *
-	 *		Service permettant de contrôler les directives éditeurs depuis
-	 *	d'autres éléments d'angular.
-	 */
-	module.service("$editors", function() {
+	module.factory("Editor", function() {
 
 		/**
 		 *	@ngdoc object
@@ -20,18 +17,19 @@
 	   *	Objet permettant de manipuler une directive editor à distance.
 		 */
 		var Editor = function() {
-			this.$document = null;
+			this.$$editor = null;
+			this.$$onInit = [];
 		};
 
-		/**
-		 *	@ngdoc method
-		 *
-		 *	Vérifie si l'objet est initialisé, et donc utilisable.
-		 *
-		 *	@return boolean true si l'objet est initialisé.
-		 */
-		Editor.prototype.$initialized = function() {
-			return angular.isDefined(this.$document);
+		Editor.prototype.onInit = function(callback) {
+			this.$$onInit.push(callback);
+		};
+
+		Editor.prototype.register = function(editor) {
+			this.$$editor = editor;
+			for(var i = 0; i < this.$$onInit.length; ++i) {
+				this.$$onInit[i].call(this);
+			}
 		};
 
 		/**
@@ -41,8 +39,8 @@
 		 *
 		 *	@param number lineNumber Numéro de la ligne à bloquer.
 		 */
-		Editor.prototype.$lockLine = function(lineNumber) {
-			this.$document.lockLine(lineNumber);
+		Editor.prototype.lockLine = function(lineNumber) {
+			this.$$editor.lockLine(lineNumber);
 		};
 
 		/**
@@ -52,8 +50,8 @@
 		 *
 		 *	@param number lineNumber Numéro de la ligne à marquer.
 		 */
-		Editor.prototype.$markLine = function(lineNumber) {
-			this.$document.markLine(lineNumber);
+		Editor.prototype.markLine = function(lineNumber) {
+			this.$$editor.markLine(lineNumber);
 		};
 
 		/**
@@ -63,8 +61,8 @@
 		 *
 		 *	@param number lineNumber Numéro de la ligne à démarquer.
 		 */
-		Editor.prototype.$unmarkLine = function(lineNumber) {
-			this.$document.unmarkLine(lineNumber);
+		Editor.prototype.unmarkLine = function(lineNumber) {
+			this.$$editor.unmarkLine(lineNumber);
 		};
 
 		/**
@@ -74,8 +72,8 @@
 		 *
 		 *	@param number lineNumber Numéro de la ligne à débloquer.
 		 */
-		Editor.prototype.$unlockLine = function(lineNumber) {
-			this.$document.unlockLine(lineNumber);
+		Editor.prototype.unlockLine = function(lineNumber) {
+			this.$$editor.unlockLine(lineNumber);
 		};
 
 		/**
@@ -87,28 +85,27 @@
 		 *	@param string text
 		 *		Texte à concaténer.
 		 */
-		Editor.prototype.$concat = function(text) {
-			if(this.$document.getValue() == "") {
-				this.$document.setValue(text);
+		Editor.prototype.concat = function(text) {
+			if(this.$$editor.getValue() == "") {
+				this.$$editor.setValue(text);
 			}
 			else {
-				this.$document.setValue(this.$document.getValue() + "\n" + text);
+				this.$$editor.setValue(this.$$editor.getValue() + "\n" + text);
 			}
-			return this.$document;
 		};
 
 		/**
 		* Transforme une position buffer en position curseur.
 		*/
-		Editor.prototype.$toPosition = function(ch) {
-			return this.$document.findPosH({line:0, ch:0}, ch, 'char');
+		Editor.prototype.toPosition = function(ch) {
+			return this.$$editor.findPosH({line:0, ch:0}, ch, 'char');
 		};
 
 		/**
 		* Changer la sélection de l'éditeur.
 		*/
-		Editor.prototype.$select = function(start, end) {
-			this.$document.setSelection(start, end);
+		Editor.prototype.select = function(start, end) {
+			this.$$editor.setSelection(start, end);
 		};
 
 		/**
@@ -121,26 +118,16 @@
 		 *
 		 *	@return string le contenu de l'editeur s'il n'a pas été modifié.
 		 */
-		Editor.prototype.$content = function(text) {
+		Editor.prototype.content = function(text) {
 			if(angular.isDefined(text)) {
-				this.$document.setValue(text);
+				this.$$editor.setValue(text);
 			}
 			else {
-				return this.$document.getValue();
+				return this.$$editor.getValue();
 			}
 		};
 
-		/**
-		 *	@ngdoc method
-		 *	Créée un nouvel objet Editor à passer en paramètre d'une directive editor.
-		 *
-		 *	@return Editor un nouvel objet editor.
-		 */
-		this.$new = function() {
-			return new Editor();
-		};
-
-		return this;
+		return Editor;
 
 	});
 
@@ -163,13 +150,13 @@
 			"scope":{
 				"language":"@",
 				"autofocus":"@",
-				"service":"="
+				"useController":"="
 			},
 			"template":"<textarea class=\"editor\"></textarea>",
 			"link": function(scope, iElem, iAttrs, ngModelCtrl) {
 
 				// Création de l'éditeur CodeMirror
-				var cmDocument = CodeMirror.fromTextArea(iElem.find("textarea")[0], {
+				scope.$$editor = CodeMirror.fromTextArea(iElem.find("textarea")[0], {
 					lineNumbers: true,
 					mode: scope.language,
 					matchBrackets: true,
@@ -177,17 +164,17 @@
 					gutters: ["CodeMirror-linenumbers", "breakpoints"]
 				});
 
-				// Si on veut binder un service
-				if(angular.isDefined(scope.service)) {
-					scope.service.$document = cmDocument;
-				}
+				scope.$watch("useController", function(newController) {
+					scope.$$lastController = newController;
+					newController.register(scope.$$editor);
+				});
 
 				// Si une directive ng-model est définie
 				if(angular.isDefined(ngModelCtrl)) {
 
-					cmDocument.on("change", function(changes) {
+					scope.$$editor.on("change", function(changes) {
 						ngModelCtrl.$setViewValue(
-							cmDocument.getValue()
+							scope.$$editor.getValue()
 						);
 					});
 

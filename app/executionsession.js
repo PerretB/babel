@@ -149,7 +149,7 @@
     ExecutionSession.prototype.$$flush = function() {
       var result = this.$$interpreter.out;
       this.$$interpreter.out = "";
-      return result.
+      return result;
     };
 
     ExecutionSession.prototype.$$unflush = function(content) {
