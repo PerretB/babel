@@ -27,8 +27,8 @@
 							   '. function sort [error:"Il n\'y a pas de fonction sort."   ] [named:premiereErreur] ' +
 							   'with { root . return } [error:"La fonction sort ne retourne rien."] [named:secondeErreur ]';
 
-					scope.editor = new Editor();
-					scope.editor.onInit(function() {
+					scope.$$editor = new Editor();
+					scope.$$editor.onInit(function() {
 						this.concat(" ");
 						this.concat("function SimplePrint (a, b, c) {");
 						this.concat("	print(a);");
@@ -39,13 +39,19 @@
 						this.lockLine(3);
 					});
 
+					scope.$$cmdContent = "";
+					scope.$$script = new Script();
+
+					scope.$watch('code', function(newCode) {
+						scope.$$script.parse(newCode);
+						scope.$$isValid = scope.$$script.isValid();
+					});
+
 							/*scope.$cmdContent = "";
-							scope.$script = new Script();
+
 							scope.$errors = [];
 
-							scope.$watch('$code', function() {
-								scope.$script = null;
-							});
+
 
 							scope.$compile = function() {
 								scope.$script = $scripts.$build(scope.$code);
@@ -79,8 +85,6 @@
 								scope.$cmdContent = scope.$script.$cmd();
 								scope.$script = null;
 							};*/
-
-
 
 				}
 			};

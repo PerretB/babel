@@ -165,8 +165,10 @@
 				});
 
 				scope.$watch("useController", function(newController) {
-					scope.$$lastController = newController;
-					newController.register(scope.$$editor);
+					if(angular.isDefined(newController)) {
+						scope.$$lastController = newController;
+						newController.register(scope.$$editor);
+					}
 				});
 
 				// Si une directive ng-model est définie
