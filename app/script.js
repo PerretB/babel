@@ -226,6 +226,27 @@
 		};
 		
 		/**
+		* @return String représentation en chaines de caractères d'un array
+		*/
+		Script.prototype.$toString = function(array) {
+			var str="[";
+			for (key in array.properties) {
+				if (array.properties[key].type == "object")
+					str+=this.$toString(array.properties[key]);
+				else {
+					if (array.properties[key].type == "string")
+						str+= "'"+array.properties[key].data+"'";
+					else
+						str+=array.properties[key].data;
+				}
+			}
+			if (str[str.length-1] == ",")
+				str = str.substring(0,str.length-1);
+			str+="]";
+			return str;
+		};
+		
+		/**
 		* @return Object dump des variables
 		*/
 		Script.prototype.$getDump = function() {
@@ -237,13 +258,10 @@
 				for (key in scope.properties) 
 				{
 					if (nativeArguments.indexOf(key) != -1 || scope.properties[key].type == "function" )
-					continue;
+						continue;
 					// Case of an array
 					if (scope.properties[key].type == "object") {
-						dictionary[key] = [];
-						for (key2 in scope.properties[key].properties) {
-							dictionary[key].push(scope.properties[key].properties[key2].raw);
-						}
+						dictionary[key] = this.$toString(scope.properties[key]);
 					}	
 					else if (scope.properties[key].data !== undefined) {
 						if (scope.properties[key].type == "string")
@@ -274,23 +292,29 @@
 					// Si la fonction a fini de s'exécuter, on la retire de la pile
 					if (Node.doneExec !== undefined && Node.doneExec == true)
 						scope.$stack.shift();
-					// Si la fonction ne s'est pas encore exécutée, on l'ajoute dans la pile (avec ses arguments)
-					else if (Node.doneCallee_ === undefined) {
-						var str = "";
-						for (argument in node.arguments) {
-							if (node.arguments[argument].type == "Identifier") {
-								if (scope.$dumpLocal[node.arguments[argument].name] !== undefined)
-									str=str+scope.$dumpLocal[node.arguments[argument].name];
-								else if (scope.$dumpGlobal[node.arguments[argument].name] !== undefined)
-									str=str+scope.$dumpGlobal[node.arguments[argument].name];
+					// Si la fonction ne s'est pas encore exécutée et que tous les arguments ont été parsés, on l'ajoute dans la pile (avec ses arguments)
+					else if (Node.func_ !== undefined) {
+						if (Node.n_ == node.arguments.length) {
+							var str = "(";
+							for (var i = 0; i < node.arguments.length-1; ++i) {
+								var arg = node.arguments[i];
+								if (arg.type == "object")
+									str+=this.$toString(arg);					
 								else
-									str=str+node.arguments[argument].name;
-							}					
-							else
-								str=str+node.arguments[argument].raw;
-							str=str+",";
-						}
-						scope.$stack.unshift(node.callee.name+"("+str.substring(0,str.length-1)+")");		
+									str=str+arg.raw;
+								str=str+",";
+							}
+							if (Node.value.type == "object") {
+								str+=this.$toString(Node.value);		
+							} else {
+								if (Node.value.type != "string")
+									str=str+Node.value.data;
+								else
+									str=str+"'"+Node.value.data+"'";				
+							}
+							str+=")";
+							scope.$stack.unshift(node.callee.name+str);								
+						}	
 					}						
 				}	
 				return scope.$stack;

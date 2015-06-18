@@ -242,8 +242,13 @@
                         scope.$editor.$concat(" ");
                         scope.$editor.$concat("function sort (toSort) {");
                         scope.$editor.$concat(" var result = [];");
-                        scope.$editor.$concat(" function test() {};");
+                        scope.$editor.$concat(" function test()");
+						scope.$editor.$concat(" {");
+						scope.$editor.$concat(" 	var z = 5;");
+						scope.$editor.$concat(" }");
                         scope.$editor.$concat(" ");
+						scope.$editor.$concat(" result.push(toSort);");
+						scope.$editor.$concat(" ");						
                         scope.$editor.$concat(" var a = 0; a++;");
                         scope.$editor.$concat(" var c = 4 + a;");
                         scope.$editor.$concat(" var b; b = 2; ++b;");
@@ -259,7 +264,7 @@
                         scope.$editor.$concat("");
                         scope.$editor.$concat(" return result;");
                         scope.$editor.$concat("}");
-                        scope.$editor.$concat("var w = sort('x');");
+                        scope.$editor.$concat("var w = sort(sort('x'+'y'));");
                         scope.$editor.$concat("sort('y');");
 
                         scope.$editor.$lockLine(1);
