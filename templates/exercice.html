@@ -4,31 +4,14 @@
   </div>
 </div>
 
-<div class="right-panel container-fluid">
-  <div class="row">
-    <button ng-disabled="$$isValid" class="btn btn-primary col-xs-10 col-xs-offset-1" ng-click="$execute()">
-      Execute
-    </button>
-  </div>
-  <div class="row">
-    <button ng-disabled="$$isValid" class="btn btn-primary col-xs-10 col-xs-offset-1" ng-click="$next('detailed-step-by-step')">
-      Next step (detailed step-by-step)
-    </button>
-  </div>
-  <div class="row">
-    <button ng-disabled="$$isValid" class="btn btn-primary col-xs-10 col-xs-offset-1" ng-click="$next('instruction-by-instruction')">
-      Next step (instruction by instruction)
-    </button>
-  </div>
-  <div class="row">
-    <errors messages="$errors"></errors>
-  </div>
-</div>
-
 <div class="main-panel">
   <div class="editor-panel">
-    <editor class="script-editor" language="javascript" autofocus="true" use-controller="editor" ng-model="code">
-    </editor>
+    <script-editor
+      language="javascript"
+      autofocus="true"
+      script="script"
+      controller="editor"
+    ></script-editor>
   </div>
   <div class="cmd-panel">
     <cmd content="$$cmdContent"></cmd>

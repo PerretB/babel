@@ -9,10 +9,35 @@
 
 	var module = angular.module("babel.exercice", dependencies);
 
+	/*module.factory("Exercice", ["Script", "ExecutionSession", function() {
+
+		function Exercice() {
+			this.initialCode  = "";
+			this.lockedLines  = [];
+			this.codeQueries  = [];
+			this.unitTests    = [];
+			this.script       = null;
+		}
+
+		Exercice.prototype.addUnitTest = function(callback) {
+				this.unitTests.append(callback);
+		};
+
+		Exercice.prototype.validate = function() {
+
+		};
+
+		Exercice.prototype.init = function() {
+			this.script = new Script(this.initialCode);
+		};
+
+		return Exercice;
+
+	}]);*/
+
 	module.directive("exercice", [
 		"Script",
-		"Editor",
-		function(Script, Editor) {
+		function(Script) {
 			return {
 				"restrict":"E",
 				"scope":{
@@ -22,30 +47,26 @@
 				"templateUrl":"templates/exercice.html",
 				"link": function(scope, iElem, iAttrs) {
 
-					var test =
-								 'root ' +
-							   '. function sort [error:"Il n\'y a pas de fonction sort."   ] [named:premiereErreur] ' +
-							   'with { root . return } [error:"La fonction sort ne retourne rien."] [named:secondeErreur ]';
+					scope.script = new Script(
+						"function sort(array) {\n\n}"
+					);
 
-					scope.$$editor = new Editor();
-					scope.$$editor.onInit(function() {
-						this.concat(" ");
-						this.concat("function SimplePrint (a, b, c) {");
-						this.concat("	print(a);");
-						this.concat("}");
-						this.concat(" ");
+					scope.script.lockLine(0);
+					scope.script.lockLine(2);
 
-						this.lockLine(1);
-						this.lockLine(3);
-					});
+					var test = 'root ' +
+									   '. function sort 			 [error:"Il n\'y a pas de fonction sort."   ] [named:premiereErreur] ' +
+									   'with { root . return } [error:"La fonction sort ne retourne rien."] [named:secondeErreur ]';
 
-					scope.$$cmdContent = "";
-					scope.$$script = new Script();
 
-					scope.$watch('code', function(newCode) {
+
+					//scope.$$cmdContent = "";
+					//scope.$$script = new Script();
+
+					/*scope.$watch('code', function(newCode) {
 						scope.$$script.parse(newCode);
 						scope.$$isValid = scope.$$script.isValid();
-					});
+					});*/
 
 							/*scope.$cmdContent = "";
 
