@@ -17,8 +17,9 @@
 	 * 	Numéro de la ligne à marquer.
 	 */
 	var mark = function(lineNumber) {
-		this.lineMarkMod.markedsLines.push(this.getLineHandle(lineNumber));
-		CodeMirror.signal(this, "mark", this, lineNumber);
+		this.__markedsLines().push(this.getLineHandle(lineNumber));
+		this.setGutterMarker(lineNumber, "breakpoints", makeMarker());
+		this.addLineClass(lineNumber, "background", "CodeMirror-marked");
 	};
 
 	/**
@@ -31,7 +32,8 @@
 		for(var i = 0; i < this.__markedsLines().length; ++i) {
 			if(this.getLineNumber(this.__markedsLines(i)) == lineNumber) {
 				this.__markedsLines().splice(i, 1);
-				CodeMirror.signal(this, "unmark", this, lineNumber);
+				this.setGutterMarker(lineNumber, "breakpoints", null);
+				this.removeLineClass(lineNumber, "background", "CodeMirror-marked");
 			}
 		}
 	};
@@ -42,7 +44,7 @@
 	 * @return Array un tableau de lineHandle vers les lignes marquées.
 	 */
 	var markedsLines = function() {
-		return this.lineMarkMod.markedsLines.slice();
+		return this.__markedsLines().slice();
 	}
 
 	/**
@@ -51,37 +53,25 @@
 	 * @return Array un tableau de lineHandle vers les lignes marquées.
 	 */
 	var __markedsLines = function(i) {
+		if(this.$$markedsLines == null || this.$$markedsLines == undefined) {
+			this.$$markedsLines = [];
+		}
+
 		if(i == undefined || i == null) {
-			return this.lineMarkMod.markedsLines;
+			return this.$$markedsLines;
 		}
 		else {
-			return this.lineMarkMod.markedsLines[i];
+			return this.$$markedsLines[i];
 		}
 	}
 
 	/**
 	 *	Définition des méthodes ajoutées par l'extension.
 	 */
-	CodeMirror.defineExtension("markLine", mark);
-	CodeMirror.defineExtension("unmarkLine", unmark);
-	CodeMirror.defineExtension("markedsLines", markedsLines);
-	CodeMirror.defineExtension("__markedsLines", __markedsLines);
-
-	/**
-	* Appellée à chaque marquage de ligne.
-	*/
-	var onMark = function(CodeMirror, lineNumber) {
-		CodeMirror.setGutterMarker(lineNumber, "breakpoints", makeMarker());
-		CodeMirror.addLineClass(lineNumber, "background", "CodeMirror-marked");
-	};
-
-	/**
-	* Appellée à chaque démarquage de ligne.
-	*/
-	var onUnmark = function(CodeMirror, lineNumber) {
-		CodeMirror.setGutterMarker(lineNumber, "breakpoints", null);
-		CodeMirror.removeLineClass(lineNumber, "background", "CodeMirror-marked");
-	};
+	CodeMirror.defineDocExtension("markLine", mark);
+	CodeMirror.defineDocExtension("unmarkLine", unmark);
+	CodeMirror.defineDocExtension("markedsLines", markedsLines);
+	CodeMirror.defineDocExtension("__markedsLines", __markedsLines);
 
 	/**
 	* Créé un marqueur.
@@ -93,17 +83,4 @@
 	  return marker;
 	}
 
-	/**
-	 * Code d'initialisation.
-	 */
-	CodeMirror.defineInitHook(function(CodeMirror) {
-
-		CodeMirror.on("mark", onMark);
-		CodeMirror.on("unmark", onUnmark);
-
-		CodeMirror.lineMarkMod = {
-			markedsLines:[]
-		};
-
-	});
 });

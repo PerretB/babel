@@ -10,6 +10,7 @@
   * Ce module regroupe les utilitaires liés à l'exécution.
   */
 	var module = angular.module("babel.execution", dependencies);
+
 	module.factory("ExecutionSession", ["Interpreter", "AST", "Node", "$JSParse", function(Interpreter, AST, Node, $JSParse) {
 
     /**
@@ -191,6 +192,8 @@
 				return null;
 			}
 		};
+
+		return ExecutionSession;
 
   }]);
 

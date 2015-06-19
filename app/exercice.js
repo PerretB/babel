@@ -2,6 +2,7 @@
 
 	var dependencies = [
 		"babel.editor",
+		"babel.execution",
 		"babel.cmd",
 		"babel.script",
 		"babel.errors"
@@ -9,21 +10,53 @@
 
 	var module = angular.module("babel.exercice", dependencies);
 
-	/*module.factory("Exercice", ["Script", "ExecutionSession", function() {
+	module.factory("Exercice", ["Script", "ExecutionSession", function(Script, ExecutionSession) {
 
 		function Exercice() {
-			this.initialCode  = "";
-			this.lockedLines  = [];
-			this.codeQueries  = [];
-			this.unitTests    = [];
-			this.script       = null;
+			this.constraints  = [];
+			this.tests    	  = [];
+			this.script       = new Script();
+			this.errors				= [];
 		}
 
-		Exercice.prototype.addUnitTest = function(callback) {
-				this.unitTests.append(callback);
+		Exercice.prototype.unitTest = function(callback) {
+				this.unitTests.push(callback);
+		};
+
+		Exercice.prototype.constraint = function(query) {
+				this.constraints.push(query);
 		};
 
 		Exercice.prototype.validate = function() {
+
+			this.errors = [];
+
+			if(!this.script.isValid()) {
+				this.errors = ["Il y a des erreurs de syntaxe !"];
+				return false;
+			}
+
+			angular.forEach(this.constraints, function(constraint) {
+				var result = this.script.ast.validate(constraint);
+
+				if(!result.isValid()) {
+						result.each(function() {
+							this.errors.push(this.error);
+						});
+				}
+			});
+
+			if(this.errors.length > 0) {
+				return false;
+			}
+
+			angular.forEach(this.tests, function(unitTest) {
+				if(!unitTest.apply(this)) {
+					return false;
+				}
+			});
+
+			return true;
 
 		};
 
@@ -33,11 +66,12 @@
 
 		return Exercice;
 
-	}]);*/
+	}]);
 
 	module.directive("exercice", [
 		"Script",
-		function(Script) {
+		"Exercice",
+		function(Script, Exercice) {
 			return {
 				"restrict":"E",
 				"scope":{
@@ -47,26 +81,20 @@
 				"templateUrl":"templates/exercice.html",
 				"link": function(scope, iElem, iAttrs) {
 
-					scope.script = new Script(
+					scope.exercice = new Exercice();
+					scope.exercice.script = new Script(
 						"function sort(array) {\n\n}"
 					);
 
-					scope.script.lockLine(0);
-					scope.script.lockLine(2);
+					scope.exercice.script.lockLine(0);
+					scope.exercice.script.lockLine(2);
 
-					var test = 'root ' +
-									   '. function sort 			 [error:"Il n\'y a pas de fonction sort."   ] [named:premiereErreur] ' +
-									   'with { root . return } [error:"La fonction sort ne retourne rien."] [named:secondeErreur ]';
-
+					scope.exercice.constraint('root . function sort [error:"Il n\'y a pas de fonction sort."] [named:premiereErreur] with { root . return } [error:"La fonction sort ne retourne rien."] [named:secondeErreur ]');
 
 
 					//scope.$$cmdContent = "";
 					//scope.$$script = new Script();
 
-					/*scope.$watch('code', function(newCode) {
-						scope.$$script.parse(newCode);
-						scope.$$isValid = scope.$$script.isValid();
-					});*/
 
 							/*scope.$cmdContent = "";
 

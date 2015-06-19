@@ -79,7 +79,7 @@
 	 * @return Array un tableau de lineHandle vers les lignes lockées.
 	 */
 	var lockedsLines = function() {
-		return this.lockedsLines.slice();
+		return this.__lockedsLines().slice();
 	}
 
 	/**
