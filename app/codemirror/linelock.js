@@ -18,8 +18,11 @@
 	 */
 	var lock = function(lineNumber) {
 		if(!this.isLockedLine(lineNumber)) {
-			this.lineLockMod.lockedsLines.push(this.getLineHandle(lineNumber));
-			CodeMirror.signal(this, "lock", this, lineNumber);
+			this.__lockedsLines().push(this.getLineHandle(lineNumber));
+			this.addLineClass(lineNumber, "background", "CodeMirror-locked");
+			this.addLineClass(lineNumber, "background", "fa");
+			this.addLineClass(lineNumber, "background", "fa-lock");
+			checkCursor(this);
 		}
 	};
 
@@ -33,7 +36,7 @@
 		for(var i = 0; i < this.__lockedsLines().length; ++i) {
 			if(this.getLineNumber(this.__lockedsLines(i)) == lineNumber) {
 				this.__lockedsLines().splice(i, 1);
-				CodeMirror.signal(this, "unlock", this, lineNumber);
+				this.removeLineClass(lineNumber, "background", "CodeMirror-locked");
 			}
 		}
 	};
@@ -76,7 +79,7 @@
 	 * @return Array un tableau de lineHandle vers les lignes lockées.
 	 */
 	var lockedsLines = function() {
-		return this.lineLockMod.lockedsLines.slice();
+		return this.__lockedsLines().slice();
 	}
 
 	/**
@@ -85,23 +88,27 @@
 	 * @return Array un tableau de lineHandle vers les lignes lockées.
 	 */
 	var __lockedsLines = function(i) {
+		if(this.$$lockedsLines == undefined || this.$$lockedsLines == null) {
+			this.$$lockedsLines = [];
+		}
+
 		if(i == undefined || i == null) {
-			return this.lineLockMod.lockedsLines;
+			return this.$$lockedsLines;
 		}
 		else {
-			return this.lineLockMod.lockedsLines[i];
+			return this.$$lockedsLines[i];
 		}
 	}
 
 	/**
 	 *	Définition des méthodes ajoutées par l'extension.
 	 */
-	CodeMirror.defineExtension("lockLine", lock);
-	CodeMirror.defineExtension("unlockLine", unlock);
-	CodeMirror.defineExtension("isLockedLine", isLockedLine);
-	CodeMirror.defineExtension("containsLockedLines", containsLockedLines);
-	CodeMirror.defineExtension("lockedsLines", lockedsLines);
-	CodeMirror.defineExtension("__lockedsLines", __lockedsLines);
+	CodeMirror.defineDocExtension("lockLine", lock);
+	CodeMirror.defineDocExtension("unlockLine", unlock);
+	CodeMirror.defineDocExtension("isLockedLine", isLockedLine);
+	CodeMirror.defineDocExtension("containsLockedLines", containsLockedLines);
+	CodeMirror.defineDocExtension("lockedsLines", lockedsLines);
+	CodeMirror.defineDocExtension("__lockedsLines", __lockedsLines);
 
 	/**
 	* Retourne la direction du curseur en fonction de deux positions.
@@ -112,6 +119,15 @@
 	* @return number 1 ou -1 en fonction du déplacement.
 	*/
 	var getCursorDirection = function(lastCursorPosition, newCursorPosition) {
+
+		if(
+			lastCursorPosition == undefined || lastCursorPosition == null ||
+			newCursorPosition == undefined || newCursorPosition == null
+		)
+		{
+				return 1;
+		}
+
 		if(newCursorPosition.line - lastCursorPosition.line < 0) {
 				return -1;
 		}
@@ -123,85 +139,72 @@
 	/**
 	* Insère une nouvelle ligne au début du document.
 	*/
-	var insertNewLineFirst = function(CodeMirror) {
-		CodeMirror.replaceRange("\n", {line:0, ch:0}, undefined, "LockMod");
+	var insertNewLineFirst = function(CMDocument) {
+		CMDocument.replaceRange("\n", {line:0, ch:0}, undefined, "LockMod");
 	};
 
 	/**
 	* Insère une nouvelle ligne à la fin du document.
 	*/
-	var insertNewLineEnd = function(CodeMirror) {
-		var lastLine = CodeMirror.lastLine();
-		CodeMirror.replaceRange("\n", {line:lastLine, ch:CodeMirror.getLine(lastLine).length}, undefined, "LockMod");
-	};
-
-	/**
-	* Appellée à chaque verrouillage de ligne.
-	*/
-	var onLock = function(CodeMirror, lineNumber) {
-		CodeMirror.addLineClass(lineNumber, "background", "CodeMirror-locked");
-		CodeMirror.addLineClass(lineNumber, "background", "fa");
-		CodeMirror.addLineClass(lineNumber, "background", "fa-lock");
-		checkCursor(CodeMirror);
-	};
-
-	/**
-	* Appellée à chaque déverrouillage de ligne.
-	*/
-	var onUnlock = function(CodeMirror, lineNumber) {
-		CodeMirror.removeLineClass(lineNumber, "background", "CodeMirror-locked");
+	var insertNewLineEnd = function(CMDocument) {
+		var lastLine = CMDocument.lastLine();
+		CMDocument.replaceRange("\n", {line:lastLine, ch:CMDocument.getLine(lastLine).length}, undefined, "LockMod");
 	};
 
 	/**
 	* Change la position du curseur vers une position valide.
 	*/
-	var updateCursorPosition = function(CodeMirror, cursorDirection) {
+	var updateCursorPosition = function(CMDocument, cursorDirection) {
 
-		var actualLine = CodeMirror.getCursor().line;
+		var actualLine = CMDocument.getCursor().line;
 
-		while(CodeMirror.isLockedLine(actualLine)) {
+		while(CMDocument.isLockedLine(actualLine)) {
 
 			actualLine += cursorDirection;
 
 			if(actualLine < 0) {
 				actualLine = 0;
-				insertNewLineFirst(CodeMirror);
+				insertNewLineFirst(CMDocument);
 			}
 
-			if(actualLine > CodeMirror.lastLine()) {
-				insertNewLineEnd(CodeMirror);
+			if(actualLine > CMDocument.lastLine()) {
+				insertNewLineEnd(CMDocument);
 			}
 
 		}
 
-		CodeMirror.setCursor({line:actualLine, ch:0});
+		CMDocument.setCursor({line:actualLine, ch:0});
 
 	};
 
   /**
 	* Vérifie que le curseur n'est pas sur une position hasardeuse.
 	*/
-	var checkCursor = function(CodeMirror) {
+	var checkCursor = function(CMDocument) {
 
-		var lastCursorPosition = CodeMirror.lineLockMod.lastCursorPosition;
-		var newCursorPosition = CodeMirror.getCursor();
+		var lastCursorPosition = CMDocument.lastCursorPosition;
+		var newCursorPosition = CMDocument.getCursor();
 
 		// On authorise la sélection.
-		if(!CodeMirror.somethingSelected()) {
-			if(CodeMirror.isLockedLine(newCursorPosition.line)) {
+		if(!CMDocument.somethingSelected()) {
+			if(CMDocument.isLockedLine(newCursorPosition.line)) {
 				var cursorDirection = getCursorDirection(lastCursorPosition, newCursorPosition);
-				updateCursorPosition(CodeMirror, cursorDirection);
+				updateCursorPosition(CMDocument, cursorDirection);
 			}
 		}
 
-		CodeMirror.lineLockMod.lastCursorPosition = CodeMirror.getCursor();
+		CMDocument.lastCursorPosition = CMDocument.getCursor();
+	};
+
+	var checkDocCursor = function(CodeMirror) {
+		checkCursor(CodeMirror.getDoc());
 	};
 
 	/**
 	* Vérifie que les modifications sont valides.
 	*/
 	var checkChange = function(CodeMirror, updates) {
-		if(updates.origin != "LockMod" && CodeMirror.containsLockedLines(updates.from, updates.to)) {
+		if(updates.origin != "LockMod" && CodeMirror.getDoc().containsLockedLines(updates.from, updates.to)) {
 			updates.cancel();
 		}
 	};
@@ -215,16 +218,8 @@
 	 */
 	CodeMirror.defineInitHook(function(CodeMirror) {
 
-		CodeMirror.on("lock", onLock);
-		CodeMirror.on("unlock", onUnlock);
-
-		CodeMirror.on("cursorActivity", checkCursor);
+		CodeMirror.on("cursorActivity", checkDocCursor);
 		CodeMirror.on("beforeChange", checkChange);
-
-		CodeMirror.lineLockMod = {
-			lockedsLines:[],
-			lastCursorPosition:{line:0, ch:0}
-		};
 
 	});
 

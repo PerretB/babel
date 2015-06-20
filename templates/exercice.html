@@ -1,77 +1,45 @@
 <div class="top-bar container-fluid">
-    <div class="row"></div>
+  <div class="row">
+
+  </div>
 </div>
 
-<!-- MAIN PANEL -->
+<div class="right-panel">
+  <div class="row">
+    <div ng-disabled="!exercice.script.isValid()" class="col-xs-8 col-xs-offset-2 btn btn-primary" ng-click="$execute()">
+      Exécuter le script
+    </div>
+  </div>
+  <div class="row" style="margin-top:10px;">
+    <div ng-disabled="!exercice.script.isValid()" class="col-xs-8 col-xs-offset-2 btn btn-primary">
+      Valider le script
+    </div>
+  </div>
+  <div class="row" style="margin-top:10px;">
+      <button ng-disabled="!exercice.script.isValid()" class="btn btn-primary col-xs-10 col-xs-offset-1" ng-click="$next('detailed-step-by-step')">
+          <div class="fa fa-arrow-circle-o-right"></div> Pas suivant
+      </button>
+  </div>
+  <div class="row" style="margin-top:10px;">
+      <button ng-disabled="!exercice.script.isValid()" class="btn btn-primary col-xs-10 col-xs-offset-1" ng-click="$next('instruction-by-instruction')">
+          <div class="fa fa-arrow-circle-o-right"></div> Instruction suivante
+      </button>
+  </div>
+  <div class="row" style="margin-top:10px;">
+      <button ng-disabled="!exercice.script.isValid() && $previousNode.type != 'BlockStatement'" class="btn btn-primary col-xs-10 col-xs-offset-1" ng-click="$goToEndOfBlock()">
+          <div class="fa fa-arrow-circle-o-right"></div> Fin du bloc
+      </button>
+  </div>
+</div>
+
 <div class="main-panel">
-    <div class="editor-panel">
-        <editor language="javascript" autofocus="true" service="$editor" ng-model="$code">
-        </editor>
-    </div>
-    <div class="cmd-panel">
-        <cmd content="$cmdContent"></cmd>
-    </div>
-</div>
-
-<!-- RIGHT PANEL -->
-<div class="right-panel container-fluid">
-    <!-- BUTTONS -->
-    <div class="row">
-        <button ng-disabled="$script != null" class="btn btn-primary col-xs-10 col-xs-offset-1" ng-click="$compile()">
-            <div class="fa fa-cog"></div> Parser
-        </button>
-    </div>
-    <div class="row">
-        <button ng-disabled="$script == null" class="btn btn-primary col-xs-10 col-xs-offset-1" ng-click="$execute()">
-            <div class="fa fa-arrow-circle-right"></div> Exécuter
-        </button>
-    </div>
-    <div class="row">
-        <button ng-disabled="$script == null" class="btn btn-primary col-xs-10 col-xs-offset-1" ng-click="$next('detailed-step-by-step')">
-            <div class="fa fa-arrow-circle-o-right"></div> Pas suivant
-        </button>
-    </div>
-    <div class="row">
-        <button ng-disabled="$script == null" class="btn btn-primary col-xs-10 col-xs-offset-1" ng-click="$next('instruction-by-instruction')">
-            <div class="fa fa-arrow-circle-o-right"></div> Instruction suivante
-        </button>
-    </div>
-    <div class="row">
-        <button ng-disabled="$script == null && $previousNode.type != 'BlockStatement'" class="btn btn-primary col-xs-10 col-xs-offset-1" ng-click="$goToEndOfBlock()">
-            <div class="fa fa-arrow-circle-o-right"></div> Fin du bloc
-        </button>
-    </div>
-
-    <!-- ERRORS -->
-    <div class="row errors">
-        <errors messages="$errors"></errors>
-    </div>
-
-    <!-- STACKS AND VARIABLE WATCERS -->
-    <div class="row first-stack">
-        <fieldset>
-            <legend><div class="fa fa-binoculars"></div> &Eacute;tat des variables globales</legend>
-            <ul><li ng-repeat="(key,value) in $dumpGlobal">{{key}} = {{value}}</li></ul>
-        </fieldset>
-    </div>
-    <div class="row">
-        <fieldset>
-            <legend><div class="fa fa-binoculars"></div> &Eacute;tat des variables locales</legend>
-            <ul>
-                <li ng-repeat="(key,value) in $dumpLocal">
-                    {{key}} = {{value}}
-                </li>
-            </ul>
-        </fieldset>
-    </div>
-    <div class="row">
-        <fieldset>
-            <legend><div class="fa fa-align-justify"></div> Pile d'appel</legend>
-            <ul>
-                <li ng-repeat="key in $stack track by $index">
-                    {{key}}
-                </li>
-            </ul>
-        </fieldset>
-    </div>
+  <div class="editor-panel">
+    <script-editor
+      autofocus="true"
+      script="exercice.script"
+    ></script-editor>
+  </div>
+  <div class="cmd-panel">
+    <cmd content="$$cmdContent"></cmd>
+  </div>
 </div>

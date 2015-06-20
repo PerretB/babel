@@ -13,15 +13,17 @@
 
 "root"                  return "ROOT";
 "function"              return "FUNCTION";
-"return"                return "RETURN";
-"var"                   return "VAR";
-"as"                    return "ALIAS";
-"with error message"    return "DEFINE_ERROR";
+/*"return"                return "RETURN";*/
+"named"                 return "ALIAS";
+"error"                 return "DEFINE_ERROR";
 
+":"                     return ":";
 ","                     return ",";
 ">"                     return ">";
 "."                     return ".";
 "+"                     return "+";
+"with"                  return "FILTER";
+"not with"              return "NEGFILTER";
 
 "("                     return "(";
 ")"                     return ")";
@@ -29,6 +31,7 @@
 "]"                     return "]";
 "{"                     return "{";
 "}"                     return "}";
+"!"                     return "!";
 
 L?\"(\\.|[^\\"])*\"     return "STR"; /* "\"" ([^\"\\]*|"\\\""|"\\")* "\"" */
 
@@ -43,33 +46,33 @@ L?\"(\\.|[^\\"])*\"     return "STR"; /* "\"" ([^\"\\]*|"\\\""|"\\")* "\"" */
 %%
 
 requests :
-           request ',' request    {$$ = ASTRequest.concat($1, $2);}
-         | request EOF            {return ASTRequest.identity($1);}
+           request ',' request        {$$ = $ASTRequest.$concat($1, $2);}
+         | request EOF                {return $ASTRequest.$identity($1);}
          ;
 
 request :
-          request '.' request_unit    {$$ = ASTRequest.firstChild($1, $3);}
-        | request '>' request_unit    {$$ = ASTRequest.has($1, $3);}
-        | request DEFINE_ERROR string {$$ = ASTRequest.defineError($1, $3);}
-        | request ALIAS IDENTIFIER       {$$ = ASTRequest.alias($1, $3);}
-        | request_unit                {$$ = ASTRequest.identity($1);}
+          request '.' request_unit    {$$ = $ASTRequest.$firstChild($1, $3);}
+        | request '>' request_unit    {$$ = $ASTRequest.$has($1, $3);}
+        | request FILTER request_unit {$$ = $ASTRequest.$filter($1, $3);}
+        | request NEGFILTER request_unit          {$$ = $ASTRequest.$negfilter($1, $3);}
+        | request '[' DEFINE_ERROR ':' string ']' {$$ = $ASTRequest.$defineError($1, $5);}
+        | request '[' ALIAS ':' IDENTIFIER ']'    {$$ = $ASTRequest.$alias($1, $5);}
+        | request_unit                {$$ = $ASTRequest.$identity($1);}
         ;
 
 string :
-         STR                              {$$ = $1.substring(1, $1.length-1);}
+         STR                          {$$ = $1.substring(1, $1.length-1);}
        ;
 
-/*  request AS IDENTIFIER request         {$$ = ASTRequest.alias($1, $3);}
-| request DEFINE_ERROR STR request      {$$ = ASTRequest.defineError($1, $3.substring(1, $3.length-1));}*/
-// '(' request ')'                {$$ = ASTRequest.identity($2);}
 request_unit :
-               node                           {$$ = ASTRequest.identity($1);}
-             ;
+         node                         {$$ = $ASTRequest.$identity($1);}
+       | "{" request "}"              {$$ = $ASTRequest.$identity($2);}
+       ;
 
 
 node :
-       RETURN                         {$$ = ASTRequest.node("return");}
-     | ROOT                           {$$ = ASTRequest.rootNode();}
-     | FUNCTION IDENTIFIER            {$$ = ASTRequest.functionNode($2);}
-     | FUNCTION                       {$$ = ASTRequest.node("function");}
+       ROOT                           {$$ = $ASTRequest.$rootNode();}
+     | FUNCTION IDENTIFIER            {$$ = $ASTRequest.$functionNode($2);}
+     | FUNCTION                       {$$ = $ASTRequest.$node("function");}
+     | IDENTIFIER                     {$$ = $ASTRequest.$node($1);}
      ;
