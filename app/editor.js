@@ -49,9 +49,11 @@
 				});
 
 				scope.$$editor.on("change", function(changes) {
-					if(angular.isDefined(scope.script)) {
-						scope.script.parse();
-					}
+					scope.$apply(function() {
+						if(angular.isDefined(scope.script)) {
+							scope.script.parse();
+						}
+					});
 				});
 
 			}

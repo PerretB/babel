@@ -17,11 +17,14 @@
 	 * 	Numéro de la ligne à marquer.
 	 */
 	var mark = function(lineNumber) {
-		this.__markedsLines().push(this.getLineHandle(lineNumber));
-		this.setGutterMarker(lineNumber, "breakpoints", makeMarker());
-		this.addLineClass(lineNumber, "background", "CodeMirror-marked");
+		if(this.getEditor() != null && this.getEditor() != undefined) {
+			this.__markedsLines().push(this.getLineHandle(lineNumber));
+			this.getEditor().setGutterMarker(lineNumber, "breakpoints", makeMarker());
+			this.addLineClass(lineNumber, "background", "CodeMirror-marked");
+		}
 	};
 
+ // Test à faire dans la classe script ?
 	/**
 	 * Permet de démarquer une ligne de code.
 	 *
@@ -32,7 +35,7 @@
 		for(var i = 0; i < this.__markedsLines().length; ++i) {
 			if(this.getLineNumber(this.__markedsLines(i)) == lineNumber) {
 				this.__markedsLines().splice(i, 1);
-				this.setGutterMarker(lineNumber, "breakpoints", null);
+				this.getEditor().setGutterMarker(lineNumber, "breakpoints", null);
 				this.removeLineClass(lineNumber, "background", "CodeMirror-marked");
 			}
 		}

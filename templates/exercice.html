@@ -6,27 +6,37 @@
 
 <div class="right-panel">
   <div class="row">
-    <div ng-disabled="!exercice.script.isValid()" class="col-xs-8 col-xs-offset-2 btn btn-primary" ng-click="$execute()">
+    <div ng-disabled="$syntaxError() || $$exec" class="col-xs-10 col-xs-offset-1 btn btn-primary" ng-click="$execute()">
       Exécuter le script
     </div>
   </div>
   <div class="row" style="margin-top:10px;">
-    <div ng-disabled="!exercice.script.isValid()" class="col-xs-8 col-xs-offset-2 btn btn-primary">
+    <div ng-disabled="$syntaxError()" class="col-xs-10 col-xs-offset-1 btn btn-primary">
       Valider le script
     </div>
   </div>
   <div class="row" style="margin-top:10px;">
-      <button ng-disabled="!exercice.script.isValid()" class="btn btn-primary col-xs-10 col-xs-offset-1" ng-click="$next('detailed-step-by-step')">
+      <button ng-disabled="$syntaxError() || $$exec" class="btn btn-primary col-xs-10 col-xs-offset-1" ng-click="$startStepByStep()">
+          <div class="fa fa-arrow-circle-o-right"></div> Démarer le mode pas à pas
+      </button>
+  </div>
+  <div class="row" style="margin-top:10px;">
+      <button ng-disabled="$syntaxError() || !$$exec" class="btn btn-primary col-xs-10 col-xs-offset-1" ng-click="$endStepByStep()">
+          <div class="fa fa-arrow-circle-o-right"></div> Arrêter le mode pas à pas
+      </button>
+  </div>
+  <div class="row" style="margin-top:10px;">
+      <button ng-disabled="$syntaxError() || !$$exec" class="btn btn-primary col-xs-10 col-xs-offset-1" ng-click="$next('detailed-step-by-step')">
           <div class="fa fa-arrow-circle-o-right"></div> Pas suivant
       </button>
   </div>
   <div class="row" style="margin-top:10px;">
-      <button ng-disabled="!exercice.script.isValid()" class="btn btn-primary col-xs-10 col-xs-offset-1" ng-click="$next('instruction-by-instruction')">
+      <button ng-disabled="$syntaxError() || !$$exec" class="btn btn-primary col-xs-10 col-xs-offset-1" ng-click="$next('instruction-by-instruction')">
           <div class="fa fa-arrow-circle-o-right"></div> Instruction suivante
       </button>
   </div>
   <div class="row" style="margin-top:10px;">
-      <button ng-disabled="!exercice.script.isValid() && $previousNode.type != 'BlockStatement'" class="btn btn-primary col-xs-10 col-xs-offset-1" ng-click="$goToEndOfBlock()">
+      <button ng-disabled="($syntaxError() || !$$exec) && $previousNode.type != 'BlockStatement'" class="btn btn-primary col-xs-10 col-xs-offset-1" ng-click="$goToEndOfBlock()">
           <div class="fa fa-arrow-circle-o-right"></div> Fin du bloc
       </button>
   </div>

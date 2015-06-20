@@ -83,7 +83,7 @@
 
 					scope.exercice = new Exercice();
 					scope.exercice.script = new Script(
-						"function sort(array) {\n\n}",
+						"function sort(array) {\n\n}\n\nfor(var i = 0; i < 10; ++i) {\n  print(i);\n}",
 						"javascript"
 					);
 
@@ -91,6 +91,28 @@
 					scope.exercice.script.lockLine(2);
 
 					scope.exercice.constraint('root . function sort [error:"Il n\'y a pas de fonction sort."] [named:premiereErreur] with { root . return } [error:"La fonction sort ne retourne rien."] [named:secondeErreur ]');
+
+          scope.$$exec = undefined;
+
+          scope.$syntaxError = function() {
+            return !scope.exercice.script.isValid();
+          };
+
+          scope.$watch(function() {
+            return scope.exercice.script.content()
+          }, function() {
+            scope.$$exec = undefined;
+          })
+
+          scope.$startStepByStep = function() {
+            if(scope.exercice.script.isValid()) {
+							scope.$$exec = scope.exercice.script.createExecutionSession();
+						}
+          };
+
+          scope.$endStepByStep = function() {
+            scope.$$exec = undefined;
+          };
 
 					scope.$execute = function() {
 						if(scope.exercice.script.isValid()) {
@@ -173,17 +195,17 @@
            * à exécuter et met en valeur le noeud au sein de cette ligne.
            */
           scope.$highlightNode = function(node) {
-              scope.$editor.$select(
-                  scope.$editor.$toPosition(node.start),
-                  scope.$editor.$toPosition(node.end)
+              scope.exercice.script.select(
+                  scope.exercice.script.toPosition(node.start),
+                  scope.exercice.script.toPosition(node.end)
               );
 
               if (scope.$lastMarkedLine != null) {
-                  scope.$editor.$unmarkLine(scope.$lastMarkedLine);
+                  scope.exercice.script.unmarkLine(scope.$lastMarkedLine);
               }
 
-              scope.$lastMarkedLine = scope.$editor.$toPosition(node.start).line;
-              scope.$editor.$markLine(scope.$lastMarkedLine);
+              scope.$lastMarkedLine = scope.exercice.script.toPosition(node.start).line;
+              scope.exercice.script.markLine(scope.$lastMarkedLine);
           };
 
           /**
@@ -192,8 +214,8 @@
            */
           scope.$unhighlightLastNodeHighlighted = function() {
               if (scope.$lastMarkedLine != null) {
-                  scope.$editor.$unmarkLine(scope.$lastMarkedLine);
-                  scope.$editor.$select(scope.$editor.$toPosition(0));
+                  scope.exercice.script.unmarkLine(scope.$lastMarkedLine);
+                  scope.exercice.script.select(scope.$editor.$toPosition(0));
                   scope.$lastMarkedLine = null;
                   scope.$previousNode = null;
                   scope.$previousNodePausedOn = null;
@@ -226,11 +248,10 @@
            *        le type de stepByStep ('detailed-step-by-step', 'instruction-by-instruction')
            */
           scope.$next = function(stepByStepType) {
-              var Node = scope.$script.$nextNode();
+              var node = scope.$$exec.nextNode().$$node;
 
               if (angular.isDefined(Node)) {
-                  var node = Node.node;
-                  scope.$stack = scope.$script.$getStack(scope,Node);
+                  scope.$stack = scope.$$exec.stack();
 
                   if (node.type == 'BlockStatement') {
                       scope.$lastBlockEncountered = node;
@@ -241,17 +262,22 @@
                       scope.$previousNodePausedOn = node;
                       scope.$previousNode = node;
                       scope.$highlightNode(node);
+
+                      /*
+                      J'ai perdu la fonction dans le merge
+
                       var $dump = scope.$script.$getDump();
                       var global = $dump["global"]
                       delete $dump["global"];
                       if (global)
                           scope.$dumpGlobal = $dump;
                       else
-                          scope.$dumpLocal = $dump;
+                          scope.$dumpLocal = $dump;*/
+
                   }
                   else {
                       scope.$previousNode = node;
-                      if (!scope.$script.$step()) {
+                      if (!scope.$$exec.step()) {
                           return;
                       }
                       scope.$next(stepByStepType);
@@ -262,13 +288,13 @@
                   scope.$unhighlightLastNodeHighlighted();
               }
 
-              if(!scope.$script.$step()) {
-                  scope.$cmdContent = scope.$script.$cmd();
+              if(!scope.$$exec.step()) {
+                  scope.$$cmdContent = scope.$$exec.out();
                   scope.$unhighlightLastNodeHighlighted();
-                  scope.$script = null;
+                  scope.$$exec = undefined;
               }
               else {
-                  scope.$cmdContent = scope.$script.$cmd();
+                  scope.$$cmdContent = scope.$$exec.out();
               }
           };
 

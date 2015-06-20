@@ -82,7 +82,7 @@
 		* Transforme une position buffer en position curseur.
 		*/
 		Script.prototype.toPosition = function(ch) {
-			return this.$$code.findPosH({line:0, ch:0}, ch, 'char');
+			return this.$$code.posFromIndex(ch);
 		};
 
 		/**
@@ -130,20 +130,16 @@
 				code = this.$$code.getValue();
 			}
 
-			var result = true;
-
 			try {
 				var parsedAST = $JSParse(code);
 				this.ast = new AST(parsedAST);
 				this.error = undefined;
+				return true;
 			}
 			catch(e) {
 				this.ast = undefined;
 				this.error = e;
-				result = false;
-			}
-			finally {
-				return result;
+				return false;
 			}
 
 		};
