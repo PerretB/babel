@@ -4,10 +4,22 @@
   </div>
 </div>
 
+<div class="right-panel">
+  <div class="row">
+    <div class="col-xs-8 col-xs-offset-2 btn btn-primary" ng-click="$execute()">
+      Exécuter le script
+    </div>
+  </div>
+  <div class="row" style="margin-top:10px;">
+    <div class="col-xs-8 col-xs-offset-2 btn btn-primary">
+      Valider le script
+    </div>
+  </div>
+</div>
+
 <div class="main-panel">
   <div class="editor-panel">
     <script-editor
-      language="javascript"
       autofocus="true"
       script="exercice.script"
     ></script-editor>

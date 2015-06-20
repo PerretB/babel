@@ -25,7 +25,6 @@
 		return {
 			"restrict":"E",
 			"scope":{
-				"language":"@",
 				"autofocus":"@",
 				"script":"="
 			},
@@ -35,7 +34,6 @@
 				// Création de l'éditeur CodeMirror
 				scope.$$editor = CodeMirror.fromTextArea(iElem.find("textarea")[0], {
 					lineNumbers: true,
-					mode: scope.language,
 					matchBrackets: true,
 					autofocus: scope.autofocus,
 					gutters: ["CodeMirror-linenumbers", "breakpoints"]

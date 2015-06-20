@@ -63,7 +63,7 @@
 
     var ExecutionSession = function(script) {
       this.script = script;
-      this.$$interpreter = new Interpreter(script.code, initInterpreter);
+      this.$$interpreter = new Interpreter(script.content(), initInterpreter);
     };
 
 		/**

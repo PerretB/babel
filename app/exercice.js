@@ -83,7 +83,8 @@
 
 					scope.exercice = new Exercice();
 					scope.exercice.script = new Script(
-						"function sort(array) {\n\n}"
+						"function sort(array) {\n\n}",
+						"javascript"
 					);
 
 					scope.exercice.script.lockLine(0);
@@ -91,49 +92,13 @@
 
 					scope.exercice.constraint('root . function sort [error:"Il n\'y a pas de fonction sort."] [named:premiereErreur] with { root . return } [error:"La fonction sort ne retourne rien."] [named:secondeErreur ]');
 
-
-					//scope.$$cmdContent = "";
-					//scope.$$script = new Script();
-
-
-							/*scope.$cmdContent = "";
-
-							scope.$errors = [];
-
-
-
-							scope.$compile = function() {
-								scope.$script = $scripts.$build(scope.$code);
-	              errors = scope.$script.$ast().validate(test);
-
-								var functions = scope.$script.$ast().find("root > Statement").nodes;
-								var node = functions[0];
-
-	              msgs = [];
-
-								console.log(scope.$script.$call("SimplePrint", 1, 2, 3));
-								console.log(scope.$script.$call("SimplePrint", "bla", [0,1], {do:"it"}));
-
-								/*console.log(scope.$script.$do("SimplePrint(2,3,4);"));
-								console.log(scope.$script.$do("SimplePrint(4,5,6);"));
-								console.log(scope.$script.$do("SimplePrint(7,8,9);"));*/
-
-	              /*errors.each(function() {
-	                 msgs.push(this.error);
-	              });
-
-	              scope.$errors = msgs;
-
-	              if(scope.$errors.length > 0) {
-	                  scope.$script = null;
-	              }*/
-							/*};
-
-							scope.$execute = function() {
-								scope.$script.$run();
-								scope.$cmdContent = scope.$script.$cmd();
-								scope.$script = null;
-							};*/
+					scope.$execute = function() {
+						if(scope.exercice.script.isValid()) {
+							exec = scope.exercice.script.createExecutionSession();
+							exec.run();
+							scope.$$cmdContent = exec.out();
+						}
+					};
 
 				}
 			};

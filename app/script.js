@@ -2,7 +2,8 @@
 
 	var dependencies = [
 		"babel.jstools",
-		"babel.ast"
+		"babel.ast",
+		"babel.execution"
 	];
 
 	/**
@@ -14,12 +15,23 @@
 	* L'objet script, permet d'analyser et créer des sessions d'exécution d'un
 	* script.
 	*/
-	module.factory("Script", ["AST", "$JSParse", function(AST, $JSParse) {
+	module.factory("Script", ["AST", "$JSParse", "ExecutionSession", function(AST, $JSParse, ExecutionSession) {
 
-		var Script = function(code) {
-			this.$$code = CodeMirror.Doc(code || "");
+		var Script = function(code, language) {
+			this.$$code = CodeMirror.Doc(code || "", language);
+			this.$$language = language;
 			this.ast = undefined;
 			this.error = undefined;
+		};
+
+		Script.prototype.language = function(language) {
+			if(angular.isDefined(language)) {
+				this.$$code = CodeMirror.Doc(this.content(), language);
+				this.$$language = language;
+			}
+			else {
+				return this.$$language;
+			}
 		};
 
 		/**
