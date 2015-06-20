@@ -1,367 +1,179 @@
 (function() {
 
 	var dependencies = [
-
+		"babel.jstools",
+		"babel.ast",
+		"babel.execution"
 	];
 
+	/**
+	* Ce module regroupe les objets utiles à l'analyse des scripts.
+	*/
 	var module = angular.module("babel.script", dependencies);
 
-	module.service("$scripts", function() {
+	/**
+	* L'objet script, permet d'analyser et créer des sessions d'exécution d'un
+	* script.
+	*/
+	module.factory("Script", ["AST", "$JSParse", "ExecutionSession", function(AST, $JSParse, ExecutionSession) {
 
-		/**
-		* Initialise un interpréteur, et ajoute la fonction alert/print
-		*/
-		var initInterpreter = function(interpreter, codeScope) {
-
-			interpreter.cmd = "";
-
-			var wrapper = function(text) {
-				text = text ? text.toString() : '';
-				if(interpreter.cmd == "") {
-					interpreter.cmd = text;
-				}
-				else {
-					interpreter.cmd = interpreter.cmd + "\n" + text;
-				}
-			};
-
-			interpreter.setProperty(codeScope, 'alert',
-			interpreter.createNativeFunction(wrapper)
-			);
-
-			interpreter.setProperty(codeScope, 'print',
-			interpreter.createNativeFunction(wrapper)
-			);
-
+		var Script = function(code, language) {
+			this.$$code = CodeMirror.Doc(code || "", language);
+			this.$$language = language;
+			this.ast = undefined;
+			this.error = undefined;
 		};
 
-		/**
-		* @class Script
-		*
-		* Surcouche à l'interpreteur JS, permet de l'utiliser de manière abstraite.
-		*/
-		var Script = function(code) {
-			this.$code = code;
-
-			try {
-				this.$interpreter = new Interpreter(code, initInterpreter);
-			}
-			catch(e) {
-				this.$interpreter = undefined;
-				this.$error = e;
-			}
-			finally {}
-
-		};
-
-		/**
-		* Execute l'instruction suivante.
-		* @return boolean false s'il n'existe plus d'instruction.
-		*/
-		Script.prototype.$step = function () {
-			if(angular.isDefined(this.$interpreter)) {
-				return this.$interpreter.step();
+		Script.prototype.language = function(language) {
+			if(angular.isDefined(language)) {
+				this.$$code = CodeMirror.Doc(this.content(), language);
+				this.$$language = language;
 			}
 			else {
-				return false;
+				return this.$$language;
 			}
 		};
-		
-		/**
-		* Test un script.
-		*/
-		Script.prototype.$test = function(test) {
-			var validator = ValidatorBuilder.parse(test);
-			return validator.validate(this.$ast());
-		};
-		
-		/**
-		* Cherche des noeuds
-		* 
-		*/
-		Script.prototype.$find = function(query) {
-			var request = ValidatorBuilder.parse(query);
-			return request.find(this.$ast());
-		}
 
 		/**
-		* Execute le script, et retourne le résultat.
-		*
-		* @todo Penser à améliorer la méthode pour éviter les problèmes de boucles infinies.
-		* @return Object résultat de l'exécution.
+		 *	@ngdoc method
+		 *
+		 *	Permet de bloquer une ligne de l'éditeur.
+		 *
+		 *	@param number lineNumber Numéro de la ligne à bloquer.
+		 */
+		Script.prototype.lockLine = function(lineNumber) {
+			this.$$code.lockLine(lineNumber);
+		};
+
+		/**
+		 *	@ngdoc method
+		 *
+		 *	Permet de marquer une ligne de l'éditeur (en tant que prochaine instruction à exécuter).
+		 *
+		 *	@param number lineNumber Numéro de la ligne à marquer.
+		 */
+		Script.prototype.markLine = function(lineNumber) {
+			this.$$code.markLine(lineNumber);
+		};
+
+		/**
+		 *	@ngdoc method
+		 *
+		 *	Permet de démarquer une ligne de l'éditeur (en tant que prochaine instruction à exécuter).
+		 *
+		 *	@param number lineNumber Numéro de la ligne à démarquer.
+		 */
+		Script.prototype.unmarkLine = function(lineNumber) {
+			this.$$code.unmarkLine(lineNumber);
+		};
+
+		/**
+		 *	@ngdoc method
+		 *
+		 *	Permet de débloquer une ligne de l'éditeur.
+		 *
+		 *	@param number lineNumber Numéro de la ligne à débloquer.
+		 */
+		Script.prototype.unlockLine = function(lineNumber) {
+			this.$$code.unlockLine(lineNumber);
+		};
+
+		/**
+		* Transforme une position buffer en position curseur.
 		*/
-		Script.prototype.$run = function() {
-			if(angular.isDefined(this.$interpreter)) {
-				try {
-					while(this.$step());
-					return this.$interpreter.value;
-				}
-				catch(e) {
-					this.$interpreter.cmd += "\n" + e;
-					return null;
-				}
+		Script.prototype.toPosition = function(ch) {
+			return this.$$code.findPosH({line:0, ch:0}, ch, 'char');
+		};
+
+		/**
+		* Changer la sélection de l'éditeur.
+		*/
+		Script.prototype.select = function(start, end) {
+			this.$$code.setSelection(start, end);
+		};
+
+		/**
+		 *	@ngdoc method
+		 *
+		 *	Récupérer ou changer le contenu de l'editeur.
+		 *
+		 *	@param string (optional) text
+		 *		Si renseigné, cette méthode se comporte comme un setter.
+		 *
+		 *	@return string le contenu de l'editeur s'il n'a pas été modifié.
+		 */
+		Script.prototype.content = function(text) {
+			if(angular.isDefined(text)) {
+				this.$$code.setValue(text);
+				this.parse();
 			}
 			else {
-				return null;
+				return this.$$code.getValue();
 			}
 		};
 
 		/**
-		* Parcourt récursif
-		*/
-		var $_walkAst = function(callback, node, args) {
-
-			var continueWalk;
-
-			// Appel du callback sur le noeud en cours
-			if(angular.isDefined(args)) {
-				continueWalk = callback.apply(node, args);
-			}
-			else {
-				continueWalk = callback.call(node, node);
-			}
-
-			// Si pas de body, ou demande d'arrêt retour.
-			if (continueWalk === false || !angular.isDefined(node.body)) {
-				return;
-			}
-			else if (Array.isArray(node.body)) {
-				for (var i = 0; i < node.body.length; ++i) {
-					$_walkAst(callback, node.body[i], args);
-				}
-			}
-			else {
-				for (var i = 0; i < node.body.body.length; ++i) {
-					$_walkAst(callback, node.body.body[i], args);
-				}
-			}
-
-		};
-
-		/**
-		* Marche le long de l'AST et appelle une fonction sur
-		* chaque noeud.
-		*
-		* @param callback fonction rappellée, this pour accéder au noeud, si retourne false, alors on arrête la marche dans la branche actuelle.
-		*/
-		Script.prototype.$walkAst = function(callback, args) {
-			$_walkAst(callback, this.$ast(), args);
-		};
-
-		/**
-		* Vérifie qu'un noeud existe dans l'arbre.
-		*
-		* @param string type type de noeud.
-		* @return boolean true si le noeud existe.
-		*/
-		Script.prototype.$containsNode = function(type) {
-
-			var result = false;
-
-			this.$walkAst(function() {
-				if(result) {
-					return false;
-				}
-				else if(this.type == type) {
-					result = true;
-					return false;
-				}
-			});
-
-			return result;
-
-		};
-
-		/**
-		* Test l'existence d'une fonction.
-		*
-		* @param string functionName
-		*   Nom de la fonction
-		*
-		* @return boolean true si la fonction existe.
-		*/
-		Script.prototype.containsFunctionCall = function(functionName) {
-			var result = false;
-
-			this.$walkAst(function() {
-				if(result) {
-					return false;
-				}
-
-				if (this.type == 'ExpressionStatement') {
-					if (this.expression.type == "CallExpression") {
-						if (this.expression.callee.name == functionName) {
-							result = true;
-							return false;
-						}
-					}
-				}
-			});
-
-			return result;
-		};
-
-		/**
-		* @return les logs de l'exécution.
-		*/
-		Script.prototype.$cmd = function() {
-			if(angular.isDefined(this.$interpreter)) {
-				return this.$interpreter.cmd || "";
-			}
-			else {
-				return this.$error + "";
-			}
-		};
-
-		/**
-		* @return Array pile d'instructions.
-		*/
-		Script.prototype.$stack = function() {
-			if(angular.isDefined(this.$interpreter)) {
-				return this.$interpreter.stateStack;
-			}
-			else {
-				return null;
-			}
-		};
-		
-		/**
-		* @return String représentation en chaines de caractères d'un array
-		*/
-		Script.prototype.$toString = function(array) {
-			var str="[";
-			for (key in array.properties) {
-				if (array.properties[key].type == "object")
-					str+=this.$toString(array.properties[key]);
-				else {
-					if (array.properties[key].type == "string")
-						str+= "'"+array.properties[key].data+"'";
-					else
-						str+=array.properties[key].data;
-				}
-			}
-			if (str[str.length-1] == ",")
-				str = str.substring(0,str.length-1);
-			str+="]";
-			return str;
-		};
-		
-		/**
-		* @return Object dump des variables
-		*/
-		Script.prototype.$getDump = function() {
-			if(angular.isDefined(this.$interpreter)) {
-				var nativeArguments = [ "Array","Boolean","Date","Function","Infinity","JSON","Math","NaN","Number","Object","RegExp","String","alert","decodeURI","decodeURIComponent","encodeURI","encodeURIComponent","escape","eval","isFinite","isNaN","parseFloat","parseInt","print","self","undefined","unescape","window","arguments" ]
-				var scope = this.$interpreter.getScope();
-
-				dictionary = {};
-				for (key in scope.properties) 
-				{
-					if (nativeArguments.indexOf(key) != -1 || scope.properties[key].type == "function" )
-						continue;
-					// Case of an array
-					if (scope.properties[key].type == "object") {
-						dictionary[key] = this.$toString(scope.properties[key]);
-					}	
-					else if (scope.properties[key].data !== undefined) {
-						if (scope.properties[key].type == "string")
-						dictionary[key] = "'"+scope.properties[key].data+"'";
-						else if (scope.properties[key].type == "function")
-						dictionary[key] = "function";
-						else
-						dictionary[key] = scope.properties[key].data;
-					}
-					
-				}
-				dictionary["global"] = ("window" in scope.properties)
-				return dictionary;
-			}
-			else {
-				return null;
-			}
-		};
-		
-		/**
-		* @return Object pile d'appels
-		*/
-		Script.prototype.$getStack = function(scope, Node) {
-			if(angular.isDefined(this.$interpreter)) {
-				var node = Node.node;
-				// Si le noeud est un appel a une fonction :
-				if (node.type == "CallExpression") {
-					// Si la fonction a fini de s'exécuter, on la retire de la pile
-					if (Node.doneExec !== undefined && Node.doneExec == true)
-						scope.$stack.shift();
-					// Si la fonction ne s'est pas encore exécutée et que tous les arguments ont été parsés, on l'ajoute dans la pile (avec ses arguments)
-					else if (Node.func_ !== undefined) {
-						if (Node.n_ == node.arguments.length) {
-							var str = "(";
-							for (var i = 0; i < node.arguments.length-1; ++i) {
-								var arg = node.arguments[i];
-								if (arg.type == "object")
-									str+=this.$toString(arg);					
-								else
-									str=str+arg.raw;
-								str=str+",";
-							}
-							if (Node.value.type == "object") {
-								str+=this.$toString(Node.value);		
-							} else {
-								if (Node.value.type != "string")
-									str=str+Node.value.data;
-								else
-									str=str+"'"+Node.value.data+"'";				
-							}
-							str+=")";
-							scope.$stack.unshift(node.callee.name+str);								
-						}	
-					}						
-				}	
-				return scope.$stack;
-			}
-			else {
-				return null;
-			}
-		};
-		
-		/**
-		* @return Object prochain noeud exécuté.
-		*/
-		Script.prototype.$nextNode = function() {
-			if(angular.isDefined(this.$interpreter)) {
-				return this.$interpreter.stateStack[0];
-			}
-			else {
-				return null;
-			}
-		};
-
-		/**
-		* @return L'abstract Syntax Tree du script.
-		*/
-		Script.prototype.$ast = function() {
-			if(angular.isDefined(this.$interpreter)) {
-				return this.$interpreter.ast;
-			}
-			else {
-				return null;
-			}
-		};
-
-		/**
-		* Créer un nouvel objet script.
+		* Parse du nouveau code pour pouvoir utiliser l'arbre syntaxique par la
+		* suite.
 		*
 		* @param string code
-		*   Code du script
+		*		Code à parser.
 		*
-		* @return Script le script.
+		* @return boolean true s'il n'y a pas d'erreur de syntaxe.
 		*/
-		this.$build = function(code) {
-			return new Script(code);
+		Script.prototype.parse = function(code) {
+
+			if(angular.isDefined(code)) {
+				this.$$code.setValue(code);
+			}
+			else {
+				code = this.$$code.getValue();
+			}
+
+			var result = true;
+
+			try {
+				var parsedAST = $JSParse(code);
+				this.ast = new AST(parsedAST);
+				this.error = undefined;
+			}
+			catch(e) {
+				this.ast = undefined;
+				this.error = e;
+				result = false;
+			}
+			finally {
+				return result;
+			}
+
 		};
 
-		return this;
+		/**
+		* Instancie une nouvelle session d'exécution.
+		*
+		* Si une erreur syntaxique existe dans le script, cette méthode
+		* retournera null.
+		*
+		* @return ExecutionSession Session d'exécution du script.
+		*/
+		Script.prototype.createExecutionSession = function() {
+			if(angular.isDefined(this.ast)) {
+				return new ExecutionSession(this);
+			}
+			else {
+				return null;
+			}
+		};
 
-	});
+		/**
+		* @return boolean true si le script est syntaxiquement correct.
+		*/
+		Script.prototype.isValid = function() {
+			return this.error == undefined;
+		};
+
+		return Script;
+
+	}]);
 
 })();
