@@ -41,7 +41,7 @@
 
 				scope.$watch("script", function(newValue) {
 					if(angular.isDefined(newValue) && angular.isDefined(newValue.$$code)) {
-						scope.$$editor.swapDoc(newValue.$$code);
+							scope.$$editor.swapDoc(newValue.$$code);
 					}
 					else {
 						scope.$$editor.swapDoc(CodeMirror.Doc(""));

@@ -26,7 +26,7 @@
     </div>
   </div>
   <div class="row" style="margin-top:10px;">
-    <div ng-disabled="$syntaxError()" class="col-xs-10 col-xs-offset-1 btn btn-primary">
+    <div ng-click="$validate()" class="col-xs-10 col-xs-offset-1 btn btn-primary">
       Valider le script
     </div>
   </div>
@@ -55,10 +55,10 @@
           <div class="fa fa-arrow-circle-o-right"></div> Fin du bloc
       </button>
   </div>
-  
+
   <!-- ERRORS -->
     <div class="row errors" style="margin-left:10px;">
-        <errors messages="$errors"></errors>
+        <errors messages="exercice.errors"></errors>
     </div>
 
     <!-- STACKS AND VARIABLE WATCHERS -->
@@ -88,17 +88,5 @@
             </ul>
         </fieldset>
     </div>
-	
-</div>
 
-<div class="main-panel">
-  <div class="editor-panel">
-    <script-editor
-      autofocus="true"
-      script="exercice.script"
-    ></script-editor>
-  </div>
-  <div class="cmd-panel">
-    <cmd content="$$cmdContent"></cmd>
-  </div>
 </div>

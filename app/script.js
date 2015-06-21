@@ -22,6 +22,7 @@
 			this.$$language = language;
 			this.ast = undefined;
 			this.error = undefined;
+			this.parse();
 		};
 
 		Script.prototype.language = function(language) {

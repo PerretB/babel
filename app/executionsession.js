@@ -17,6 +17,7 @@
     * Permet de transformer une valeur de l'interpreteur en valeur JS.
     */
     function toObject(value) {
+
       if(!angular.isDefined(value)) {
         return null;
       }
@@ -24,16 +25,29 @@
 				return value.data;
 			}
 			else {
-				var result = {};
 
-				for(var key in value.properties) {
-						result[key] = toObject(value.properties[key]);
+			 	if (value.toString().indexOf("[object]") == 0) {
+					var result = {};
+
+					for(var key in value.properties) {
+							result[key] = toObject(value.properties[key]);
+					}
+
+					return result;
+			 	}
+			 	else {
+					var result = [];
+
+					for(var key in value.properties) {
+							result.push(toObject(value.properties[key]));
+					}
+
+					return result;
 				}
 
-				return result;
 			}
 		}
-		
+
 	/**
     * Permet de transformer une valeur de l'interpreteur en chaine de caractères.
     */
@@ -53,18 +67,18 @@
 				// Dictionnaire ?
 				if (Object.keys(value.properties)[0] != 0) {
 					for(var key in value.properties)
-						result += "'"+key+"':"+toString(value.properties[key])+",";	
-				} 
+						result += "'"+key+"':"+toString(value.properties[key])+",";
+				}
 				// Array
 				else {
 					for(var key in value.properties)
 						result += toString(value.properties[key])+",";
-				}		
+				}
 
-				
+
 				if (result[result.length-1] == ',')
 					result = result.substring(0,result.length-1);
-					
+
 				result+="]";
 
 				return result;
@@ -134,22 +148,22 @@
     ExecutionSession.prototype.out = function() {
   		return this.$$interpreter.out || "";
 		};
-		
+
 		/**
 		* @return Object dump des variables
 		*/
 		ExecutionSession.prototype.dump = function() {
 			if(angular.isDefined(this.$$interpreter)) {
 				var nativeArguments = [ "Array","Boolean","Date","Function","Infinity","JSON","Math","NaN","Number","Object","RegExp","String","alert","decodeURI","decodeURIComponent","encodeURI","encodeURIComponent","escape","eval","isFinite","isNaN","parseFloat","parseInt","print","self","undefined","unescape","window","arguments" ]
-				
+
 				var scope = this.$$interpreter.getScope();
 
 				dictionary = {};
-				for (key in scope.properties) 
+				for (key in scope.properties)
 				{
 					if (nativeArguments.indexOf(key) != -1 || scope.properties[key].type == "function" )
 						continue;
-					var value = toString(scope.properties[key]);		
+					var value = toString(scope.properties[key]);
 					if (angular.isDefined(value))
 						dictionary[key] = value;
 				}
@@ -177,14 +191,14 @@
 							var str = "(";
 							for (var i = 0; i < Node.arguments.length; ++i) {
 								var arg = Node.arguments[i];
-								str+=toString(arg);					
+								str+=toString(arg);
 								str=str+",";
 							}
-							str+=toString(Node.value);		
+							str+=toString(Node.value);
 							str+=")";
-							scope.$stack.unshift(node.callee.name+str);								
-					}						
-				}	
+							scope.$stack.unshift(node.callee.name+str);
+					}
+				}
 				return scope.$stack;
 		};
 

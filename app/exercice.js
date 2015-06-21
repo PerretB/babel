@@ -10,6 +10,78 @@
 
 	var module = angular.module("babel.exercice", dependencies);
 
+  module.service("$Generator", function() {
+
+    /**
+    * Génère un nombre entier aléatoire.
+    *
+    * @param Number max (optionel)
+    * @param Number min (optionel)
+    *
+    * @return Number un nombre entier aléatoire.
+    */
+    this.nextInt = function(max, min) {
+
+      if(!angular.isDefined(max)) {
+        return Math.floor(Math.random() * Number.MAX_VALUE);
+      }
+      else if(!angular.isDefined(min)) {
+        return Math.floor(Math.random() * max);
+      }
+      else {
+        return Math.floor(Math.random() * (max - min) + min);
+      }
+
+    };
+
+    /**
+    * Retourne un paramètre aléatoire.
+    *
+    * @return Object paramètre choisi.
+    */
+    this.nextOf = function() {
+      if(this.params.length <= 0) {
+        return undefined;
+      }
+      else {
+        return this.nextIn(this.params);
+      }
+    };
+
+    /**
+    * Retourne un objet aléatoire contenu dans un tableau.
+    *
+    * @param Array array tableau contenant les valeurs.
+    *
+    * @return Object valeur aléatoire du tableau passé en paramètre.
+    */
+    this.nextIn = function(array) {
+      return array[this.nextInt(array.length)];
+    };
+
+    /**
+    * Génère un tableau de valeurs aléatoires.
+    *
+    * @param Number size taille du tableau.
+    *
+    * @param Callback callback fonction de génération.
+    *
+    * @return Array un tableau de valeurs aléatoires.
+    */
+    this.generateArray = function(size, callback) {
+
+      var result = new Array();
+
+      for(var i = 0; i < size; ++i) {
+        result.push(callback(i));
+      }
+
+      return result;
+
+    };
+
+  });
+
 	module.factory("Exercice", ["Script", "ExecutionSession", function(Script, ExecutionSession) {
 
 		function Exercice() {
@@ -20,7 +92,7 @@
 		}
 
 		Exercice.prototype.unitTest = function(callback) {
-				this.unitTests.push(callback);
+				this.tests.push(callback);
 		};
 
 		Exercice.prototype.constraint = function(query) {
@@ -30,18 +102,19 @@
 		Exercice.prototype.validate = function() {
 
 			this.errors = [];
+      var self = this;
 
 			if(!this.script.isValid()) {
-				this.errors = ["Il y a des erreurs de syntaxe !"];
+				this.errors = ["Il y a des erreurs de syntaxe : " + this.script.error];
 				return false;
 			}
 
 			angular.forEach(this.constraints, function(constraint) {
-				var result = this.script.ast.validate(constraint);
+				var result = self.script.ast.validate(constraint);
 
 				if(!result.isValid()) {
 						result.each(function() {
-							this.errors.push(this.error);
+							self.errors.push(this.error);
 						});
 				}
 			});
@@ -51,7 +124,7 @@
 			}
 
 			angular.forEach(this.tests, function(unitTest) {
-				if(!unitTest.apply(this)) {
+				if(!unitTest.apply(self)) {
 					return false;
 				}
 			});
@@ -68,10 +141,47 @@
 
 	}]);
 
+  /**
+  solution :::
+
+  var result = [];
+  var j = 0;
+
+  for(var i = 0; i < array.length; ++i) {
+    if(result.length == 0) {
+      result.push(array[i]);
+    }
+    else {
+      var stop = false;
+
+      for(j = 0; j < result.length && !stop; ++j) {
+        if(result[j] > array[i]) {
+          var start = result.slice(0, j);
+          var end = result.slice(j);
+          start.push(array[i]);
+          result = start.concat(end);
+          stop = true;
+        }
+      }
+
+      if(j >= result.length) {
+        result.push(array[i]);
+      }
+
+    }
+  }
+
+  print(result);
+
+  return [];
+
+  */
+
   module.directive("exercice", [
 		"Script",
+    "$Generator",
 		"Exercice",
-		function(Script, Exercice) {
+		function(Script, $Generator, Exercice) {
 			return {
 				"restrict":"E",
 				"scope":{
@@ -83,12 +193,82 @@
 
 					scope.exercice = new Exercice();
 					scope.exercice.script = new Script(
-						"function sort(array) {\n\n}\n\nfor(var i = 0; i < 10; ++i) {\n  print(i);\n}",
+						"function sort(array) {\n\n}",
 						"javascript"
 					);
 
 					scope.exercice.script.lockLine(0);
 					scope.exercice.script.lockLine(2);
+
+          /**
+          * Un test unitaire.
+          */
+          scope.exercice.unitTest(function() {
+
+            var self = this;
+
+            function validate(initial, result) {
+
+              if(result == null || result == undefined || !(result instanceof Array)) {
+                self.errors.push("La fonction sort ne retourne pas un tableau.");
+                return false;
+              }
+
+              if(initial.length == 0) {
+                if(result.length == 0) {
+                  return true;
+                }
+                else {
+                  self.errors.push("sort(["+initial+"]) retourne [" + result + "] au lieu de [].");
+                  return false;
+                }
+              }
+
+              if(initial.length == 1) {
+                if(result.length == 1 && result[0] == initial[0]) {
+                  return true;
+                }
+                else {
+                  self.errors.push("sort(["+initial+"]) retourne [" + result + "] au lieu de ["+initial+"].");
+                  return false;
+                }
+              }
+
+              if(initial.length != result.length) {
+                self.errors.push("sort(["+initial+"]) retourne [" + result + "] qui n'est pas correctement trié.");
+                return false;
+              }
+
+              for(var i = 1; i < result.length; ++i) {
+                if(result[i-1] > result[i]) {
+                  self.errors.push("sort(["+initial+"]) retourne [" + result + "] qui n'est pas correctement trié.");
+                  return false;
+                }
+              }
+
+              return true;
+
+            };
+
+            var exec = this.script.createExecutionSession();
+            exec.prepare();
+
+            for(var i = 0; i < 13; ++i) {
+              var initial = $Generator.generateArray(i, function() {
+                return $Generator.nextInt(100);
+              });
+
+              var result = exec.call("sort", initial).returned;
+
+              if(!validate(initial, result)) {
+                return false;
+              }
+
+            }
+
+            return true;
+
+          });
 
 					scope.exercice.constraint('root . function sort [error:"Il n\'y a pas de fonction sort."] [named:premiereErreur] with { root . return } [error:"La fonction sort ne retourne rien."] [named:secondeErreur ]');
 
@@ -110,6 +290,7 @@
 							scope.$stack = [];
 							scope.$dumpGlobal = [];
 							scope.$dumpLocal = [];
+              scope.$$cmdContent = "";
 						}
           };
 
@@ -124,6 +305,13 @@
 							scope.$$cmdContent = exec.out();
 						}
 					};
+
+          scope.$validate = function() {
+            scope.$$cmdContent = "";
+            if(scope.exercice.validate()) {
+              scope.$$cmdContent = "Le script est valide !";
+            }
+          };
 
           /* dernier noeud parcouru */
           scope.$previousNode = null;
