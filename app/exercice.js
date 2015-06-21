@@ -107,6 +107,9 @@
           scope.$startStepByStep = function() {
             if(scope.exercice.script.isValid()) {
 							scope.$$exec = scope.exercice.script.createExecutionSession();
+							scope.$stack = [];
+							scope.$dumpGlobal = [];
+							scope.$dumpLocal = [];
 						}
           };
 
@@ -251,7 +254,7 @@
               var node = scope.$$exec.nextNode().$$node;
 
               if (angular.isDefined(Node)) {
-                  scope.$stack = scope.$$exec.stack();
+                  scope.$stack = scope.$$exec.stack(scope);
 
                   if (node.type == 'BlockStatement') {
                       scope.$lastBlockEncountered = node;
@@ -263,16 +266,13 @@
                       scope.$previousNode = node;
                       scope.$highlightNode(node);
 
-                      /*
-                      J'ai perdu la fonction dans le merge
-
-                      var $dump = scope.$script.$getDump();
+                      var $dump = scope.$$exec.dump();
                       var global = $dump["global"]
                       delete $dump["global"];
                       if (global)
                           scope.$dumpGlobal = $dump;
                       else
-                          scope.$dumpLocal = $dump;*/
+                          scope.$dumpLocal = $dump;
 
                   }
                   else {

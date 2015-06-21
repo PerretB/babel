@@ -33,6 +33,43 @@
 				return result;
 			}
 		}
+		
+	/**
+    * Permet de transformer une valeur de l'interpreteur en chaine de caractères.
+    */
+    function toString(value) {
+      if(!angular.isDefined(value)) {
+        return null;
+      }
+			else if(value.isPrimitive) {
+				if (value.type == "string")
+					return "'"+value.data+"'";
+				else
+					return value.data;
+			}
+			else {
+				var result = "[";
+
+				// Dictionnaire ?
+				if (Object.keys(value.properties)[0] != 0) {
+					for(var key in value.properties)
+						result += "'"+key+"':"+toString(value.properties[key])+",";	
+				} 
+				// Array
+				else {
+					for(var key in value.properties)
+						result += toString(value.properties[key])+",";
+				}		
+
+				
+				if (result[result.length-1] == ',')
+					result = result.substring(0,result.length-1);
+					
+				result+="]";
+
+				return result;
+			}
+		}
 
     /**
 		* Initialise un interpréteur, et ajoute la fonction alert/print
@@ -97,12 +134,58 @@
     ExecutionSession.prototype.out = function() {
   		return this.$$interpreter.out || "";
 		};
+		
+		/**
+		* @return Object dump des variables
+		*/
+		ExecutionSession.prototype.dump = function() {
+			if(angular.isDefined(this.$$interpreter)) {
+				var nativeArguments = [ "Array","Boolean","Date","Function","Infinity","JSON","Math","NaN","Number","Object","RegExp","String","alert","decodeURI","decodeURIComponent","encodeURI","encodeURIComponent","escape","eval","isFinite","isNaN","parseFloat","parseInt","print","self","undefined","unescape","window","arguments" ]
+				
+				var scope = this.$$interpreter.getScope();
+
+				dictionary = {};
+				for (key in scope.properties) 
+				{
+					if (nativeArguments.indexOf(key) != -1 || scope.properties[key].type == "function" )
+						continue;
+					var value = toString(scope.properties[key]);		
+					if (angular.isDefined(value))
+						dictionary[key] = value;
+				}
+				dictionary["global"] = ("window" in scope.properties)
+				return dictionary;
+			}
+			else {
+				return null;
+			}
+		};
 
 		/**
 		* @return Array pile d'instructions.
 		*/
-    ExecutionSession.prototype.stack = function() {
-		  return this.$$interpreter.stateStack;
+    ExecutionSession.prototype.stack = function(scope) {
+				var Node = scope.$$exec.nextNode().$$parent;
+				var node = Node.node;
+				// Si le noeud est un appel a une fonction :
+				if (angular.isDefined(node) && node.type == "CallExpression") {
+					// Si la fonction a fini de s'exécuter, on la retire de la pile
+					if (Node.doneExec !== undefined && Node.doneExec == true)
+						scope.$stack.shift();
+					// Si la fonction ne s'est pas encore exécutée et que tous les arguments ont été parsés, on l'ajoute dans la pile (avec ses arguments)
+					else if (Node.func_ !== undefined && Node.n_ == node.arguments.length) {
+							var str = "(";
+							for (var i = 0; i < Node.arguments.length; ++i) {
+								var arg = Node.arguments[i];
+								str+=toString(arg);					
+								str=str+",";
+							}
+							str+=toString(Node.value);		
+							str+=")";
+							scope.$stack.unshift(node.callee.name+str);								
+					}						
+				}	
+				return scope.$stack;
 		};
 
     /**
@@ -186,7 +269,7 @@
 		*/
     ExecutionSession.prototype.nextNode = function() {
 			if(this.$$interpreter.stateStack.length > 0) {
-				return new Node(this.$$interpreter.stateStack[0].node);
+				return new Node(this.$$interpreter.stateStack[0].node, this.$$interpreter.stateStack[0]);
 			}
 			else {
 				return null;
