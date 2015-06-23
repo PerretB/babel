@@ -185,7 +185,7 @@
 				if (angular.isDefined(node) && node.type == "CallExpression") {
 					// Si la fonction a fini de s'exécuter, on la retire de la pile
 					if (Node.doneExec !== undefined && Node.doneExec == true)
-						scope.$stack.shift();
+						scope.exercice.stack.shift();
 					// Si la fonction ne s'est pas encore exécutée et que tous les arguments ont été parsés, on l'ajoute dans la pile (avec ses arguments)
 					else if (Node.func_ !== undefined && Node.n_ == node.arguments.length) {
 							var str = "(";
@@ -196,10 +196,10 @@
 							}
 							str+=toString(Node.value);
 							str+=")";
-							scope.$stack.unshift(node.callee.name+str);
+							scope.exercice.stack.unshift(node.callee.name+str);
 					}
 				}
-				return scope.$stack;
+				return scope.exercice.stack;
 		};
 
     /**

@@ -10,9 +10,10 @@
             return {
                   "restrict":"E",
                   "scope":{
-                        "messages":"="
+                        "local":"=",
+						"global":"="
                   },
-                  "template":"<ul><li ng-repeat=\"(key,value) in messages\">{{key}} : {{value}}</li></ul>"
+				  "template":"<fieldset><legend><div class=\"fa fa-binoculars\"></div> &Eacute;tat des variables globales</legend><ul><li ng-repeat=\"(key,value) in global\">{{key}} = {{value}}</li></ul></fieldset><fieldset><legend><div class=\"fa fa-binoculars\"></div> &Eacute;tat des variables locales</legend><ul><li ng-repeat=\"(key,value) in local\">{{key}} = {{value}}</li></ul></fieldset>"
             };    
       });
 

@@ -63,30 +63,10 @@
 
     <!-- STACKS AND VARIABLE WATCHERS -->
     <div class="row first-stack" style="margin-left:10px;">
-        <fieldset>
-            <legend><div class="fa fa-binoculars"></div> &Eacute;tat des variables globales</legend>
-            <ul><li ng-repeat="(key,value) in $dumpGlobal">{{key}} = {{value}}</li></ul>
-        </fieldset>
+        <dump local="exercice.dumpLocal" global="exercice.dumpGlobal"></dump>
     </div>
     <div class="row" style="margin-left:10px;">
-        <fieldset>
-            <legend><div class="fa fa-binoculars"></div> &Eacute;tat des variables locales</legend>
-            <ul>
-                <li ng-repeat="(key,value) in $dumpLocal">
-                    {{key}} = {{value}}
-                </li>
-            </ul>
-        </fieldset>
-    </div>
-    <div class="row" style="margin-left:10px;">
-        <fieldset>
-            <legend><div class="fa fa-align-justify"></div> Pile d'appel</legend>
-            <ul>
-                <li ng-repeat="key in $stack track by $index">
-                    {{key}}
-                </li>
-            </ul>
-        </fieldset>
+        <stack messages="exercice.stack"></stack>
     </div>
 
 </div>

@@ -5,7 +5,9 @@
 		"babel.execution",
 		"babel.cmd",
 		"babel.script",
-		"babel.errors"
+		"babel.errors",
+		"babel.stack",
+		"babel.dump"
 	];
 
 	var module = angular.module("babel.exercice", dependencies);
@@ -287,9 +289,9 @@
           scope.$startStepByStep = function() {
             if(scope.exercice.script.isValid()) {
 							scope.$$exec = scope.exercice.script.createExecutionSession();
-							scope.$stack = [];
-							scope.$dumpGlobal = [];
-							scope.$dumpLocal = [];
+							scope.exercice.stack = [];
+							scope.exercice.dumpGlobal = [];
+							scope.exercice.dumpLocal = [];
               scope.$$cmdContent = "";
 						}
           };
@@ -442,7 +444,7 @@
               var node = scope.$$exec.nextNode().$$node;
 
               if (angular.isDefined(Node)) {
-                  scope.$stack = scope.$$exec.stack(scope);
+                  scope.exercice.stack = scope.$$exec.stack(scope);
 
                   if (node.type == 'BlockStatement') {
                       scope.$lastBlockEncountered = node;
@@ -458,9 +460,9 @@
                       var global = $dump["global"]
                       delete $dump["global"];
                       if (global)
-                          scope.$dumpGlobal = $dump;
+                          scope.exercice.dumpGlobal = $dump;
                       else
-                          scope.$dumpLocal = $dump;
+                          scope.exercice.dumpLocal = $dump;
 
                   }
                   else {
